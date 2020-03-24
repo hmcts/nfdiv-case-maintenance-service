@@ -7,17 +7,26 @@ spring:
     name: div-cms
   resources:
     static-locations:
+  jackson:
+    deserialization:
+      ACCEPT_SINGLE_VALUE_AS_ARRAY: true
+    serialization:
+      FAIL_ON_EMPTY_BEANS: false
 
 server:
   port: 4010
 
 idam:
+  client:
+    redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:8080/authenticated}
+    id: divorce
+    secret: ${AUTH2_CLIENT_SECRET:dummysecret}
   api:
     url: ${IDAM_API_BASEURL:http://localhost:4503}
     redirect-url: ${IDAM_API_REDIRECT_URL:http://localhost:8080/authenticated}
   caseworker:
-    username: dummycaseworker@test.com
-    password: dummy
+    username: ${IDAM_CASEWORKER_USERNAME:dummycaseworker@test.com}
+    password: ${IDAM_CASEWORKER_PASSWORD:dummy}
   s2s-auth:
     microservice: ${AUTH_PROVIDER_SERVICE_CLIENT_MICROSERVICE:divorce_ccd_submission}
     totp_secret: ${AUTH_PROVIDER_SERVICE_CLIENT_KEY:AZBYCXDWEVFUGTHS}
@@ -31,6 +40,11 @@ ccd:
   casetype: DIVORCE
   eventid:
     create: create
+    createhwf: hwfCreate
+  bulk:
+      casetype: DIVORCE_BulkAction
+      eventid:
+          create: scheduleCreate
   server:
     port: 4452
     health:
@@ -66,13 +80,21 @@ case:
 auth2:
   client:
     id: divorce
-    secret: dummysecret
+    secret: ${AUTH2_CLIENT_SECRET:dummysecret}
 
 http:
   connect:
     timeout: 60000
     request:
       timeout: 60000
+
+health:
+    check:
+        http:
+            connect:
+                timeout: 5000
+                request:
+                    timeout: 5000
 
 documentation:
   swagger:
@@ -103,6 +125,3 @@ logging:
     uk.gov.hmcts.reform.divorce.casemaintenanceservice: DEBUG
   pattern:
     console: "%d{yyyy-MMM-dd HH:mm:ss.SSS} %-5level [%thread] %logger{15} - %msg%n"
-
-azure:
-  app_insights_key: ${APPINSIGHTS_INSTRUMENTATIONKEY:false}

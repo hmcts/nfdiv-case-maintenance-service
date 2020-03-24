@@ -9,7 +9,6 @@ import java.util.Collections;
 import java.util.Map;
 
 public abstract class PetitionSupport extends CcdUpdateSupport {
-    private static final String CHECK_CCD = "checkCcd";
     protected static final String CCD_FORMAT_DRAFT_CONTEXT_PATH = "ccd-format-draft/";
     protected static final String DIVORCE_FORMAT_DRAFT_CONTEXT_PATH = "divorce-format-draft/";
     protected static final String DIVORCE_FORMAT_KEY = "divorceFormat";
@@ -20,9 +19,16 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
     @Value("${case.maintenance.petition.context-path}")
     private String petitionContextPath;
 
-    private String draftsRequestUrl() {
-        return serverUrl + draftContextPath;
-    }
+    @Value("${case.maintenance.get-case.context-path}")
+    private String getCaseContextPath;
+
+    @Value("${case.maintenance.amend-petition-draft.context-path}")
+    private String amendPetitionContextPath;
+
+    @Value("${case.maintenance.amend-petition-draft-refusal.context-path}")
+    private String amendPetitionRefusalContextPath;
+
+    private String searchContextPath = "/casemaintenance/version/1/search";
 
     protected Response saveDraft(String userToken, String fileName, Map<String, Object> params) throws Exception {
         return
@@ -52,12 +58,37 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
             );
     }
 
-    protected Response getCase(String userToken, Boolean checkCcd) {
+    protected Response retrieveCase(String userToken) {
         return
             RestUtil.getFromRestService(
-                getRequestUrl(),
+                getRetrieveCaseRequestUrl(),
+                getHeaders(userToken)
+            );
+    }
+
+    protected Response retrieveCaseById(String userToken, String caseId) {
+        return
+            RestUtil.getFromRestService(
+                getCaseRequestUrl() + "/" + caseId,
+                getHeaders(userToken)
+            );
+    }
+
+    protected Response searchCases(String userToken, String query) {
+        return
+            RestUtil.postToRestService(
+                getSearchRequestUrl(),
+
                 getHeaders(userToken),
-                checkCcd == null ? null : Collections.singletonMap(CHECK_CCD, checkCcd)
+                query
+            );
+    }
+
+    protected Response getCase(String userToken) {
+        return
+            RestUtil.getFromRestService(
+                getCaseRequestUrl(),
+                getHeaders(userToken)
             );
     }
 
@@ -65,12 +96,51 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.getFromRestService(
                 draftsRequestUrl(),
+                getHeaders(userToken)
+            );
+    }
+
+    protected Response putAmendedPetitionDraft(String userToken) {
+        return
+            RestUtil.putToRestService(
+                getGetAmendPetitionContextPath(),
                 getHeaders(userToken),
+                "",
                 Collections.emptyMap()
             );
     }
 
-    protected String getRequestUrl() {
+    protected Response putAmendedPetitionDraftForRefusal(String userToken) {
+        return
+            RestUtil.putToRestService(
+                getGetAmendPetitionRefusalContextPath(),
+                getHeaders(userToken),
+                "",
+                Collections.emptyMap()
+            );
+    }
+
+    private String getGetAmendPetitionContextPath() {
+        return serverUrl + amendPetitionContextPath;
+    }
+
+    private String getGetAmendPetitionRefusalContextPath() {
+        return serverUrl + amendPetitionRefusalContextPath;
+    }
+
+    protected String getRetrieveCaseRequestUrl() {
         return serverUrl + petitionContextPath;
+    }
+
+    private String getCaseRequestUrl() {
+        return serverUrl + getCaseContextPath;
+    }
+
+    private String getSearchRequestUrl() {
+        return serverUrl + searchContextPath;
+    }
+
+    private String draftsRequestUrl() {
+        return serverUrl + draftContextPath;
     }
 }

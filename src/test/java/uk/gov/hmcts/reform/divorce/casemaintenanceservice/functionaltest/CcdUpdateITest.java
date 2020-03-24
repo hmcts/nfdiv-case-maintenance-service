@@ -35,6 +35,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTH_TOKEN;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = CaseMaintenanceServiceApplication.class)
@@ -46,11 +47,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class CcdUpdateITest extends AuthIdamMockSupport {
+public class CcdUpdateITest extends MockSupport {
     private static final String API_URL = "/casemaintenance/version/1/updateCase";
     private static final String EVENT_ID = "payment";
     private static final String CASE_ID = "2";
-    private static final String VALID_PAYLOAD_PATH = "ccd-submission-payload/addresses.json";
+    private static final String VALID_PAYLOAD_PATH = "ccd-submission-payload/base-case.json";
 
     private static final String DIVORCE_CASE_SUBMISSION_EVENT_SUMMARY =
         (String)ReflectionTestUtils.getField(CcdSubmissionServiceImpl.class,
@@ -74,7 +75,7 @@ public class CcdUpdateITest extends AuthIdamMockSupport {
     @Test
     public void givenCaseDataIsNull_whenUpdateCase_thenReturnBadRequest() throws Exception {
         webClient.perform(post(getApiUrl())
-            .header(HttpHeaders.AUTHORIZATION, "Some JWT Token")
+            .header(HttpHeaders.AUTHORIZATION, TEST_AUTH_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
@@ -231,6 +232,53 @@ public class CcdUpdateITest extends AuthIdamMockSupport {
         webClient.perform(post(getApiUrl())
             .content(caseData)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString(ObjectMapperTestUtil.convertObjectToJsonString(caseDetails))));
+    }
+
+    @Test
+    public void givenAllGoesWell_whenUpdateCaseWithCaseworker_thenProceedAsExpected() throws Exception {
+        final String caseData = ResourceLoader.loadJson(VALID_PAYLOAD_PATH);
+        final String message = getCaseWorkerUserDetails();
+        final String serviceAuthToken = "serviceAuthToken";
+
+        final String eventId = "eventId";
+        final String token = "token";
+        final StartEventResponse startEventResponse = StartEventResponse.builder()
+            .eventId(eventId)
+            .token(token)
+            .build();
+
+        final CaseDataContent caseDataContent = CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(
+                Event.builder()
+                    .id(startEventResponse.getEventId())
+                    .summary(DIVORCE_CASE_SUBMISSION_EVENT_SUMMARY)
+                    .description(DIVORCE_CASE_SUBMISSION_EVENT_DESCRIPTION)
+                    .build()
+            ).data(ObjectMapperTestUtil.convertStringToObject(caseData, Map.class))
+            .build();
+
+        final CaseDetails caseDetails = CaseDetails.builder().build();
+
+        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(BEARER_CASE_WORKER_TOKEN), message);
+
+        when(serviceTokenGenerator.generate()).thenReturn(serviceAuthToken);
+        when(coreCaseDataApi
+            .startEventForCaseWorker(BEARER_CASE_WORKER_TOKEN, serviceAuthToken, CASE_WORKER_USER_ID,
+                jurisdictionId, caseType, CASE_ID, EVENT_ID))
+            .thenReturn(startEventResponse);
+        when(coreCaseDataApi
+            .submitEventForCaseWorker(BEARER_CASE_WORKER_TOKEN, serviceAuthToken, CASE_WORKER_USER_ID,
+                jurisdictionId, caseType, CASE_ID, true, caseDataContent))
+            .thenReturn(caseDetails);
+
+        webClient.perform(post(getApiUrl())
+            .content(caseData)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_CASE_WORKER_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())

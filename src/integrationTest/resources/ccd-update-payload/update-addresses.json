@@ -8,7 +8,7 @@
     "D8MarriageIsSameSexCouple":"NO",
     "D8MarriageDate":"2001-02-02",
     "D8PetitionerNameDifferentToMarriageCert":"YES",
-    "D8PetitionerEmail":"email@email.com",
+    "D8PetitionerEmail":"simulate-delivered@notifications.service.gov.uk",
     "D8PetitionerPhoneNumber":"01234567890",
     "D8PetitionerFirstName":"John",
     "D8PetitionerLastName":"Smith",
@@ -56,9 +56,7 @@
         "petitioner",
         "children"
     ],
-    "D8HelpWithFeesNeedHelp":"YES",
-    "D8HelpWithFeesAppliedForFees":"YES",
-    "D8HelpWithFeesReferenceNumber":"HWF-123-456",
+    "D8HelpWithFeesNeedHelp":"NO",
     "D8DivorceCostsClaim":"YES",
     "D8DivorceClaimFrom":[
         "respondent"

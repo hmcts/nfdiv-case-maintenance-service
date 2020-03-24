@@ -2,31 +2,31 @@ package uk.gov.hmcts.reform.divorce.ccd;
 
 import io.restassured.response.Response;
 import org.junit.Test;
-import org.springframework.http.HttpStatus;
+import uk.gov.hmcts.reform.divorce.model.UserDetails;
 import uk.gov.hmcts.reform.divorce.support.PetitionSupport;
-import uk.gov.hmcts.reform.divorce.util.RestUtil;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class CcdSubmissionTest extends PetitionSupport {
-    private static final String INVALID_USER_TOKEN = "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwOTg3NjU0M"
-        + "yIsInN1YiI6IjEwMCIsImlhdCI6MTUwODk0MDU3MywiZXhwIjoxNTE5MzAzNDI3LCJkYXRhIjoiY2l0aXplbiIsInR5cGUiOiJBQ0NFU1MiL"
-        + "CJpZCI6IjEwMCIsImZvcmVuYW1lIjoiSm9obiIsInN1cm5hbWUiOiJEb2UiLCJkZWZhdWx0LXNlcnZpY2UiOiJEaXZvcmNlIiwibG9hIjoxL"
-        + "CJkZWZhdWx0LXVybCI6Imh0dHBzOi8vd3d3Lmdvdi51ayIsImdyb3VwIjoiZGl2b3JjZSJ9.lkNr1vpAP5_Gu97TQa0cRtHu8I-QESzu8kMX"
-        + "CJOQrVU";
-    private static final String  UNAUTHORISED_JWT_EXCEPTION = "status 403 reading "
-        + "IdamApiClient#retrieveUserDetails(String); content:\n";
-    private static final String REQUEST_BODY_NOT_FOUND = "Required request body is missing: public org.springframework."
-        + "http.ResponseEntity<uk.gov.hmcts.reform.ccd.client.model.CaseDetails> uk.gov.hmcts.reform.divorce.casemainte"
-        + "nanceservice.controller.CcdController.submitCase(java.lang.Object,java.lang.String)";
-
 
     @Test
     public void shouldReturnCaseIdForValidAddressesSessionData() throws Exception {
-        submitAndAssertSuccess("addresses.json");
+        String expectedStatus = "AwaitingHWFDecision";
+        Response caseSubmitted = submitCase("base-case.json", getUserDetails());
+        assertOkResponseAndCaseIdIsNotZero(caseSubmitted);
+        assertCaseStatus(caseSubmitted, expectedStatus);
+
+    }
+
+    @Test
+    public void shouldReturnCaseIdForValidAddressesSessionDatas() throws Exception {
+        String expectedStatus = "AwaitingPayment";
+        Response caseSubmitted = submitCase("addresses-no-hwf.json", getUserDetails());
+        assertOkResponseAndCaseIdIsNotZero(caseSubmitted);
+        assertCaseStatus(caseSubmitted, expectedStatus);
     }
 
     @Test
@@ -76,15 +76,17 @@ public class CcdSubmissionTest extends PetitionSupport {
 
     @Test
     public void shouldReturnCaseIdForValidAddressesSessionDataAndDeleteDraft() throws Exception {
-        final String userToken = getUserToken();
+        final UserDetails userDetails = getUserDetails();
 
-        saveDraft(userToken, CCD_FORMAT_DRAFT_CONTEXT_PATH + "addresscase.json", Collections.emptyMap());
+        final String userToken = userDetails.getAuthToken();
+
+        saveDraft(userToken, CCD_FORMAT_DRAFT_CONTEXT_PATH + "base-case.json", Collections.emptyMap());
 
         Response draftsResponseBefore = getAllDraft(userToken);
 
-        assertEquals(1, ((List)draftsResponseBefore.getBody().path("data")).size());
+        assertThat(((List)draftsResponseBefore.getBody().path("data")).size()).isOne();
 
-        Response cmsResponse = submitCase("addresses.json", userToken);
+        Response cmsResponse = submitCase("base-case.json", userDetails);
 
         assertOkResponseAndCaseIdIsNotZero(cmsResponse);
 
@@ -93,26 +95,6 @@ public class CcdSubmissionTest extends PetitionSupport {
 
         Response draftsResponseAfter = getAllDraft(userToken);
 
-        assertEquals(0, ((List)draftsResponseAfter.getBody().path("data")).size());
-    }
-
-    @Test
-    public void shouldReturnErrorForInvalidUserJwtToken() throws Exception {
-        Response cmsResponse = submitCase("addresses.json", INVALID_USER_TOKEN);
-
-        assertEquals(HttpStatus.FORBIDDEN.value(), cmsResponse.getStatusCode());
-        assertEquals(UNAUTHORISED_JWT_EXCEPTION, cmsResponse.asString());
-    }
-
-    @Test
-    public void shouldReturnBadRequestForNoRequestBody() {
-        Response cmsResponse = RestUtil.postToRestService(
-            getSubmissionRequestUrl(),
-            getHeaders(),
-            null
-        );
-
-        assertEquals(HttpStatus.BAD_REQUEST.value(), cmsResponse.getStatusCode());
-        assertEquals(REQUEST_BODY_NOT_FOUND, cmsResponse.path("message"));
+        assertThat((List) draftsResponseAfter.getBody().path("data")).isEmpty();
     }
 }

@@ -1,9 +1,7 @@
 package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
 
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +33,8 @@ import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_SERVICE_TOKEN;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = CaseMaintenanceServiceApplication.class)
@@ -46,18 +46,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class RetrieveAllDraftsServiceITest extends AuthIdamMockSupport {
+public class RetrieveAllDraftsServiceITest extends MockSupport {
     private static final String API_URL = "/casemaintenance/version/1/drafts";
     private static final String DRAFTS_CONTEXT_PATH = "/drafts";
-    private static final String DRAFT_DOCUMENT_TYPE = "divorcedraftccdformat";
     private static final String DRAFT_ID = "1";
-    private static final Draft DRAFT = new Draft(DRAFT_ID, null, DRAFT_DOCUMENT_TYPE);
+    private static final Draft DRAFT = new Draft(DRAFT_ID, null, TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT);
 
     @Autowired
     private MockMvc webClient;
-
-    @ClassRule
-    public static WireMockClassRule draftStoreServer = new WireMockClassRule(4601);
 
     @Test
     public void givenJWTTokenIsNull_whenRetrieveAllDrafts_thenReturnBadRequest() throws Exception {
@@ -93,13 +89,12 @@ public class RetrieveAllDraftsServiceITest extends AuthIdamMockSupport {
     @Test
     public void givenThereIsDrafts_whenRetrieveAllDrafts_thenReturnHttp200() throws Exception {
         final String message = getUserDetails();
-        final String serviceToken = "serviceToken";
 
         final DraftList draftList = new DraftList(Collections.singletonList(DRAFT), null);
 
-        when(serviceTokenGenerator.generate()).thenReturn(serviceToken);
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
 
-        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(serviceToken),
+        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN),
             ObjectMapperTestUtil.convertObjectToJsonString(draftList));
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);

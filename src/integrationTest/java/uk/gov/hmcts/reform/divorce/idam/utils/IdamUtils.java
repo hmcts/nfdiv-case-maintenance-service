@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.divorce.idam.utils;
 
-import io.restassured.RestAssured;
 import io.restassured.response.Response;
+import net.serenitybdd.rest.SerenityRest;
 import org.apache.http.entity.ContentType;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -12,8 +12,9 @@ import uk.gov.hmcts.reform.divorce.util.ResourceLoader;
 
 import java.util.Base64;
 
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_TOKEN;
+
 public abstract class IdamUtils {
-    private static final String TOKEN = "token";
     private static final String AUTHORIZATION_CODE = "authorization_code";
     static final String CLIENT_ID = "divorce";
     static final String CODE = "code";
@@ -29,16 +30,16 @@ public abstract class IdamUtils {
     private String idamClientSecret;
 
     public final void createUserInIdam(RegisterUserRequest registerUserRequest) {
-        RestAssured.given()
+        SerenityRest.given()
             .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())
             .body(ResourceLoader.objectToJson(registerUserRequest))
             .post(idamCreateUrl());
     }
 
     private Response retrieveUserDetails(String authToken) {
-        return RestAssured.given()
+        return SerenityRest.given()
             .header(HttpHeaders.AUTHORIZATION, authToken)
-            .get(idamUserBaseUrl +  "/details")
+            .get(idamUserBaseUrl + "/details")
             .andReturn();
     }
 
@@ -56,7 +57,7 @@ public abstract class IdamUtils {
     }
 
     private String getAuthCode(String authHeader) {
-        return RestAssured.given()
+        return SerenityRest.given()
             .header(HttpHeaders.AUTHORIZATION, authHeader)
             .queryParam("response_type", CODE)
             .queryParam("client_id", CLIENT_ID)
@@ -67,7 +68,7 @@ public abstract class IdamUtils {
     }
 
     final String getAuthTokenByCode(String code) {
-        return RestAssured.given()
+        return SerenityRest.given()
             .queryParam("code", code)
             .queryParam("grant_type", AUTHORIZATION_CODE)
             .queryParam("redirect_uri", idamRedirectUrl)
@@ -75,7 +76,7 @@ public abstract class IdamUtils {
             .queryParam("client_secret", idamClientSecret)
             .post(idamUserBaseUrl + "/oauth2/token")
             .body()
-            .jsonPath().get("access_" + TOKEN);
+            .jsonPath().get("access_" + TEST_TOKEN);
     }
 
     public final PinResponse generatePin(String firstName, String lastName, String authToken) {
@@ -85,7 +86,7 @@ public abstract class IdamUtils {
                 .lastName(lastName)
                 .build();
 
-        Response pinResponse =  RestAssured.given()
+        Response pinResponse = SerenityRest.given()
             .header(HttpHeaders.AUTHORIZATION, authToken)
             .header(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString())
             .body(ResourceLoader.objectToJson(generatePinRequest))

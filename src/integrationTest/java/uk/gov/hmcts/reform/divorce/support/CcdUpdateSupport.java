@@ -2,6 +2,7 @@ package uk.gov.hmcts.reform.divorce.support;
 
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Value;
+import uk.gov.hmcts.reform.divorce.model.UserDetails;
 import uk.gov.hmcts.reform.divorce.util.RestUtil;
 
 import java.util.Map;
@@ -12,11 +13,16 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
     private static final String PAYLOAD_CONTEXT_PATH = "ccd-update-payload/";
 
     protected static final String EVENT_ID = "paymentMade";
+    protected static final String BULK_CASE_SCHEDULE_EVENT_ID = "scheduleForListing";
+    protected static final String BULK_CASE_CREATED_EVENT_ID = "create";
 
     @Value("${case.maintenance.update.context-path}")
     private String contextPath;
 
-    protected Response updateCase(String fileName, Long caseId, String eventId, String userToken) throws Exception {
+    @Value("${case.maintenance.bulk.update.context-path}")
+    private String contextBulkPath;
+
+    protected Response updateCase(String fileName, Long caseId, String eventId, String userToken) {
         return
             RestUtil.postToRestService(
                 getRequestUrl(caseId, eventId),
@@ -34,12 +40,31 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
             );
     }
 
+    protected Response updateBulkCase(Map<String, Object> data, Long caseId, String eventId, String userToken) {
+        return
+            RestUtil.postToRestService(
+                getBulkCaseRequestUrl(caseId, eventId),
+                getHeaders(userToken),
+                data == null ? "{}" : objectToJson(data)
+            );
+    }
+
     private String getRequestUrl(Long caseId, String eventId) {
         return serverUrl + contextPath + "/" + caseId + "/" + eventId;
     }
 
-    protected Long getCaseIdFromSubmittingANewCase(String userToken) throws Exception {
-        Response cmsResponse = submitCase("addresses.json", userToken);
+    private String getBulkCaseRequestUrl(Long caseId, String eventId) {
+        return serverUrl + contextBulkPath + "/" + caseId + "/" + eventId;
+    }
+
+    protected Long getCaseIdFromSubmittingANewCase(UserDetails userDetails) throws Exception {
+        Response cmsResponse = submitCase("addresses-no-hwf.json", userDetails);
+
+        return cmsResponse.path("id");
+    }
+
+    protected Long getCaseIdFromCompletedCase(UserDetails userDetails) throws Exception {
+        Response cmsResponse = submitCase("completed-case-submitted.json", userDetails);
 
         return cmsResponse.path("id");
     }

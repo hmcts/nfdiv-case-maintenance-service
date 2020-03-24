@@ -2,6 +2,10 @@ package uk.gov.hmcts.reform.divorce.casemaintenanceservice.service;
 
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 
+import java.util.Map;
+
 public interface CcdSubmissionService {
-    CaseDetails submitCase(Object data, String authorisation);
+    CaseDetails submitCase(Map<String, Object> data, String authorisation);
+
+    CaseDetails submitBulkCase(Map<String, Object> data, String authorisation);
 }

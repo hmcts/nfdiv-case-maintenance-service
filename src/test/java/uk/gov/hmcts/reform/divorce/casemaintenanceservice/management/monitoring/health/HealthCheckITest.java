@@ -13,13 +13,13 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -33,6 +33,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8;
 import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.test.web.client.ExpectedCount.once;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
@@ -44,7 +45,7 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 @ContextConfiguration(
         classes = {CaseMaintenanceServiceApplication.class})
 @PropertySource(value = "classpath:application.properties")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 public class HealthCheckITest {
 
     private static final String HEALTH_UP_RESPONSE = "{ \"status\": \"UP\"}";
@@ -53,22 +54,23 @@ public class HealthCheckITest {
     @LocalServerPort
     private int port;
 
-    @Value("${idam.s2s-auth.url}")
+    @Value("${idam.s2s-auth.url}/health")
     private String serviceAuthHealthUrl;
 
-    @Value("${case.formatter.service.api.baseurl}")
+    @Value("${case.formatter.service.api.baseurl}/health")
     private String caseFormatterServiceHealthUrl;
 
-    @Value("${draft.store.api.baseurl}")
+    @Value("${draft.store.api.baseurl}/health")
     private String draftStoreHealthUrl;
 
     @Value("${ccd.server.health.context-path}")
     private String ccdHealthContextPath;
 
-    @Value("${idam.api.url}")
+    @Value("${idam.api.url}/health")
     private String idamApiHealthUrl;
 
     @Autowired
+    @Qualifier("healthCheckRestTemplate")
     private RestTemplate restTemplate;
 
     @ClassRule
@@ -88,7 +90,7 @@ public class HealthCheckITest {
 
     @Before
     public void setUp() {
-        healthUrl = "http://localhost:" + String.valueOf(port) + "/health";
+        healthUrl = "http://localhost:" + port + "/health";
         originalRequestFactory = restTemplate.getRequestFactory();
         mockRestServiceServer = MockRestServiceServer.createServer(restTemplate);
     }
@@ -111,17 +113,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -137,17 +139,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -163,17 +165,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -189,17 +191,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -215,17 +217,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -241,17 +243,17 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     @Test
@@ -267,24 +269,24 @@ public class HealthCheckITest {
 
         assertThat(response.getStatusLine().getStatusCode(), equalTo(503));
         assertThat(JsonPath.read(body, "$.status").toString(), equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.idamApiHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.idamApiHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.serviceAuthProviderHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.serviceAuthProviderHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.draftStoreHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.draftStoreHealthCheck.status").toString(),
             equalTo("DOWN"));
-        assertThat(JsonPath.read(body, "$.details.caseFormatterServiceHealthCheck.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.caseFormatterServiceHealthCheck.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.coreCaseData.status").toString(),
+        assertThat(JsonPath.read(body, "$.components.coreCaseData.status").toString(),
             equalTo("UP"));
-        assertThat(JsonPath.read(body, "$.details.diskSpace.status").toString(), equalTo("UP"));
+        assertThat(JsonPath.read(body, "$.components.diskSpace.status").toString(), equalTo("UP"));
     }
 
     private void mockEndpointAndResponse(String requestUrl, boolean serviceUp) {
         mockRestServiceServer.expect(once(), requestTo(requestUrl)).andExpect(method(HttpMethod.GET))
                 .andRespond(withStatus(serviceUp ? HttpStatus.OK : HttpStatus.SERVICE_UNAVAILABLE)
                         .body(serviceUp ? HEALTH_UP_RESPONSE : HEALTH_DOWN_RESPONSE)
-                        .contentType(MediaType.APPLICATION_JSON_UTF8));
+                        .contentType(APPLICATION_JSON_UTF8));
     }
 
     private void mockServiceCcdHealthCheck(boolean serviceUp) {

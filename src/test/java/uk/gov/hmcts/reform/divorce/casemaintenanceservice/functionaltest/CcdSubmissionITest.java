@@ -1,10 +1,8 @@
 package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
 
-import com.github.tomakehurst.wiremock.junit.WireMockClassRule;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import feign.FeignException;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,23 +28,21 @@ import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.DraftStoreClient;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.Draft;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.DraftList;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.impl.CcdSubmissionServiceImpl;
 
-import java.util.Collections;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.delete;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
-import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
-import static org.springframework.http.MediaType.APPLICATION_JSON_UTF8_VALUE;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_EVENT_ID;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_SERVICE_TOKEN;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_TOKEN;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = CaseMaintenanceServiceApplication.class)
@@ -59,13 +55,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class CcdSubmissionITest extends AuthIdamMockSupport {
+public class CcdSubmissionITest extends MockSupport {
     private static final String API_URL = "/casemaintenance/version/1/submit";
-    private static final String VALID_PAYLOAD_PATH = "ccd-submission-payload/addresses.json";
+    private static final String VALID_PAYLOAD_PATH = "ccd-submission-payload/base-case.json";
+    private static final String NO_HELP_WITH_FEES_PATH = "ccd-submission-payload/addresses-no-hwf.json";
+
     private static final String DRAFTS_CONTEXT_PATH = "/drafts";
-    private static final String DRAFT_DOCUMENT_TYPE = "divorcedraft";
-    private static final String DRAFT_ID = "1";
-    private static final Draft DRAFT = new Draft(DRAFT_ID, null, DRAFT_DOCUMENT_TYPE);
 
     private static final String DIVORCE_CASE_SUBMISSION_EVENT_SUMMARY =
         (String)ReflectionTestUtils.getField(CcdSubmissionServiceImpl.class,
@@ -73,9 +68,6 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
     private static final String DIVORCE_CASE_SUBMISSION_EVENT_DESCRIPTION =
         (String)ReflectionTestUtils.getField(CcdSubmissionServiceImpl.class,
             "DIVORCE_CASE_SUBMISSION_EVENT_DESCRIPTION");
-
-    @ClassRule
-    public static WireMockClassRule draftStoreServer = new WireMockClassRule(4601);
 
     @Value("${ccd.jurisdictionid}")
     private String jurisdictionId;
@@ -86,6 +78,8 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
     @Value("${ccd.eventid.create}")
     private String createEventId;
 
+    @Value("${ccd.eventid.createhwf}")
+    private String createHwfEventId;
     @Autowired
     private MockMvc webClient;
 
@@ -96,7 +90,7 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
     @Test
     public void givenCaseDataIsNull_whenSubmitCase_thenReturnBadRequest() throws Exception {
         webClient.perform(post(API_URL)
-            .header(HttpHeaders.AUTHORIZATION, "Some JWT Token")
+            .header(HttpHeaders.AUTHORIZATION, TEST_AUTH_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
@@ -143,16 +137,15 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
     @Test
     public void givenCcdThrowsFeignExceptionOnStartForCitizen_whenSubmitCase_thenReturnFeignError() throws Exception {
         final String message = getUserDetails();
-        final String serviceAuthToken = "serviceAuthToken";
         final int feignStatusCode = HttpStatus.BAD_REQUEST.value();
 
         final FeignException feignException = getMockedFeignException(feignStatusCode);
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
-        when(serviceTokenGenerator.generate()).thenReturn(serviceAuthToken);
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(USER_TOKEN, serviceAuthToken, USER_ID, jurisdictionId, caseType, createEventId))
+            .startForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, createHwfEventId))
             .thenThrow(feignException);
 
         webClient.perform(post(API_URL)
@@ -168,16 +161,13 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
     public void givenCcdThrowsFeignExceptionOnSubmitForCitizen_whenSubmitCase_thenReturnFeignError() throws Exception {
         final String caseData = ResourceLoader.loadJson(VALID_PAYLOAD_PATH);
         final String message = getUserDetails();
-        final String serviceAuthToken = "serviceAuthToken";
         final int feignStatusCode = HttpStatus.BAD_REQUEST.value();
 
         final FeignException feignException = getMockedFeignException(feignStatusCode);
 
-        final String eventId = "eventId";
-        final String token = "token";
         final StartEventResponse startEventResponse = StartEventResponse.builder()
-            .eventId(eventId)
-            .token(token)
+            .eventId(TEST_EVENT_ID)
+            .token(TEST_TOKEN)
             .build();
 
         final CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -193,12 +183,12 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
-        when(serviceTokenGenerator.generate()).thenReturn(serviceAuthToken);
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(USER_TOKEN, serviceAuthToken, USER_ID, jurisdictionId, caseType, createEventId))
+            .startForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, createHwfEventId))
             .thenReturn(startEventResponse);
         when(coreCaseDataApi
-            .submitForCitizen(USER_TOKEN, serviceAuthToken, USER_ID, jurisdictionId, caseType,
+            .submitForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType,
             true, caseDataContent))
             .thenThrow(feignException);
 
@@ -213,16 +203,12 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
 
     @Test
     public void givenAllGoesWell_whenSubmitCase_thenProceedAsExpected() throws Exception {
-        final String caseData = ResourceLoader.loadJson(VALID_PAYLOAD_PATH);
+        final String caseData = ResourceLoader.loadJson(NO_HELP_WITH_FEES_PATH);
         final String message = getUserDetails();
-        final String serviceAuthToken = "serviceAuthToken";
-        final DraftList draftList = new DraftList(Collections.singletonList(DRAFT), null);
 
-        final String eventId = "eventId";
-        final String token = "token";
         final StartEventResponse startEventResponse = StartEventResponse.builder()
-            .eventId(eventId)
-            .token(token)
+            .eventId(TEST_EVENT_ID)
+            .token(TEST_TOKEN)
             .build();
 
         final CaseDataContent caseDataContent = CaseDataContent.builder()
@@ -238,18 +224,15 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
 
         final CaseDetails caseDetails = CaseDetails.builder().build();
 
-        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(serviceAuthToken),
-            ObjectMapperTestUtil.convertObjectToJsonString(draftList));
-
-        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(serviceAuthToken));
+        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN));
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
-        when(serviceTokenGenerator.generate()).thenReturn(serviceAuthToken);
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(USER_TOKEN, serviceAuthToken, USER_ID, jurisdictionId, caseType, createEventId))
+            .startForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, createEventId))
             .thenReturn(startEventResponse);
         when(coreCaseDataApi
-            .submitForCitizen(USER_TOKEN, serviceAuthToken, USER_ID, jurisdictionId, caseType,
+            .submitForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType,
                 true, caseDataContent))
             .thenReturn(caseDetails);
 
@@ -262,19 +245,52 @@ public class CcdSubmissionITest extends AuthIdamMockSupport {
             .andExpect(content().string(containsString(ObjectMapperTestUtil.convertObjectToJsonString(caseDetails))));
     }
 
-    private void stubGetDraftEndpoint(StringValuePattern authHeader, StringValuePattern serviceToken, String message) {
-        draftStoreServer.stubFor(get(DRAFTS_CONTEXT_PATH)
-            .withHeader(HttpHeaders.AUTHORIZATION, authHeader)
-            .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
-            .withHeader(DraftStoreClient.SECRET_HEADER_NAME, new EqualToPattern(ENCRYPTED_USER_ID))
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_UTF8_VALUE)
-                .withBody(message)));
+    @Test
+    public void givenHwfCase_whenSubmitCase_thenProceedWithHwfEvent() throws Exception {
+        final String caseData = ResourceLoader.loadJson(VALID_PAYLOAD_PATH);
+        final String message = getUserDetails();
+
+        final StartEventResponse startEventResponse = StartEventResponse.builder()
+            .eventId(TEST_EVENT_ID)
+            .token(TEST_TOKEN)
+            .build();
+
+        final CaseDataContent caseDataContent = CaseDataContent.builder()
+            .eventToken(startEventResponse.getToken())
+            .event(
+                Event.builder()
+                    .id(startEventResponse.getEventId())
+                    .summary(DIVORCE_CASE_SUBMISSION_EVENT_SUMMARY)
+                    .description(DIVORCE_CASE_SUBMISSION_EVENT_DESCRIPTION)
+                    .build()
+            ).data(ObjectMapperTestUtil.convertStringToObject(caseData, Map.class))
+            .build();
+
+        final CaseDetails caseDetails = CaseDetails.builder().build();
+
+        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN));
+        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
+
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
+        when(coreCaseDataApi
+            .startForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, createHwfEventId))
+            .thenReturn(startEventResponse);
+        when(coreCaseDataApi
+            .submitForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType,
+                true, caseDataContent))
+            .thenReturn(caseDetails);
+
+        webClient.perform(post(API_URL)
+            .content(caseData)
+            .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
+            .contentType(MediaType.APPLICATION_JSON)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content().string(containsString(ObjectMapperTestUtil.convertObjectToJsonString(caseDetails))));
     }
 
     private void stubDeleteDraftEndpoint(StringValuePattern authHeader, StringValuePattern serviceToken) {
-        draftStoreServer.stubFor(delete(DRAFTS_CONTEXT_PATH + "/" + DRAFT_ID)
+        draftStoreServer.stubFor(delete(DRAFTS_CONTEXT_PATH)
             .withHeader(HttpHeaders.AUTHORIZATION, authHeader)
             .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
             .willReturn(aResponse()

@@ -14,16 +14,16 @@ import static org.junit.Assert.assertThat;
 @RunWith(Parameterized.class)
 public class CaseStateTest {
 
-    private String ccdState;
+    private final String ccdState;
 
-    private String expectedApplicationStatus;
+    private final String expectedApplicationStatus;
 
     public CaseStateTest(String ccdState, String expectedApplicationStatus) {
         this.ccdState = ccdState;
         this.expectedApplicationStatus = expectedApplicationStatus;
     }
 
-    @Parameters
+    @Parameters(name = "{index}: caseSate: {0}, expectedApplicationStatus:{1}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][]{
                 {"AwaitingPetitioner", "AwaitingPetitioner"},
@@ -35,13 +35,25 @@ public class CaseStateTest {
                 {"AwaitingDocuments", "PetitionCompleted"},
                 {"AosAwaiting", "AosAwaiting"},
                 {"AosStarted", "AosStarted"},
-                {"AosCompleted", "AosCompleted"},
                 {"AosSubmittedAwaitingAnswer", "AosSubmittedAwaitingAnswer"},
-                {"AwaitingDecreeNisi", "DNAwaiting"},
+                {"AwaitingDecreeNisi", "AwaitingDecreeNisi"},
                 {"Rejected", "Rejected"},
                 {"AwaitingLegalAdvisorReferral", "AwaitingLegalAdvisorReferral"},
                 {"DefendedDivorce", "DefendedDivorce"},
-                {"Unknown", "DNCompleted"}
+                {"AmendPetition", "AmendPetition"},
+                {"AwaitingClarification", "AwaitingClarification"},
+                {"AwaitingConsideration", "AwaitingConsideration"},
+                {"DNPronounced", "DNPronounced"},
+                {"AwaitingDecreeAbsolute", "AwaitingDecreeAbsolute"},
+                {"AwaitingPronouncement", "AwaitingPronouncement"},
+                {"DefendedDivorce", "DefendedDivorce"},
+                {"DivorceGranted", "DivorceGranted"},
+                {"DNisRefused", "DNisRefused"},
+                {"DNDrafted", "DNDrafted"},
+                {"Unknown", "DNCompleted"},
+                {"DaRequested", "DARequested"},
+                {"ClarificationSubmitted", "ClarificationSubmitted"},
+                {"AwaitingAdminClarification", "AwaitingAdminClarification"}
         });
     }
 
@@ -51,5 +63,4 @@ public class CaseStateTest {
 
         assertThat(applicationStatus.getValue(), equalTo(expectedApplicationStatus));
     }
-
 }
