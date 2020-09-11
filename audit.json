@@ -146,5 +146,7 @@
     "100001_Unexpected Content-Type was returned_http://div-cms-aat.service.core-compute-aat.internal/casemaintenance/version/1/link-respondent/caseId/letterHolderId_POST": "ignore",
     "100001_Unexpected Content-Type was returned_http://div-cms-aat.service.core-compute-aat.internal/casemaintenance/version/1/drafts_DELETE": "ignore",
     "100001_Unexpected Content-Type was returned_http://div-cms-aat.service.core-compute-aat.internal/_GET": "ignore",
-    "100001_Unexpected Content-Type was returned_http://div-cms-aat.service.core-compute-aat.internal/casemaintenance/version/1/link-respondent/caseId_DELETE": "ignore"
+    "100001_Unexpected Content-Type was returned_http://div-cms-aat.service.core-compute-aat.internal/casemaintenance/version/1/link-respondent/caseId_DELETE": "ignore",
+    "90033_Loosely Scoped Cookie_http://div-cms-aat.service.core-compute-aat.internal/casemaintenance/version/1/drafts_GET": "ignore",
+    "90033_Loosely Scoped Cookie_http://div-cms-aat.service.core-compute-aat.internal/v2/api-docs_GET": "ignore"
 }
