@@ -40,11 +40,11 @@ jar {
         attributes 'Implementation-Title': project.name,
             'Implementation-Version': project.version
     }
-    archiveFileName = 'div-case-maintenance-service.jar'
+    archiveFileName = 'nfdiv-case-maintenance-service.jar'
 }
 
 bootJar {
-    archiveFileName = 'div-case-maintenance-service.jar'
+    archiveFileName = 'nfdiv-case-maintenance-service.jar'
     manifest {
         attributes 'Implementation-Title': project.name,
             'Implementation-Version': project.version

@@ -5,7 +5,7 @@ properties([
     [
         $class: 'GithubProjectProperty',
         displayName: 'Divorce Case Maintenance Service',
-        projectUrlStr: 'https://github.com/hmcts/div-case-maintenance-service'
+        projectUrlStr: 'https://github.com/hmcts/nfdiv-case-maintenance-service'
     ],
     pipelineTriggers([
         [$class: 'GitHubPushTrigger']
@@ -15,7 +15,7 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "div"
+def product = "nfdiv"
 def component = "cms"
 
 def secrets = [

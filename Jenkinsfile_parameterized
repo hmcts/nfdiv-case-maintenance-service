@@ -3,7 +3,7 @@
 
 properties([
         parameters([
-                string(name: 'PRODUCT_NAME', defaultValue: 'div', description: 'Divorce'),
+                string(name: 'PRODUCT_NAME', defaultValue: 'nfdiv', description: 'No Fault Divorce'),
                 string(name: 'APP', defaultValue: 'cms', description: 'Divorce Case Maintenance Service'),
                 string(name: 'TYPE', defaultValue: 'java', description: ''),
                 string(name: 'ENVIRONMENT', defaultValue: 'saat', description: 'Environment where code should be built and deployed'),
