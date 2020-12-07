@@ -4,4 +4,4 @@ rules:
     upstream: upstream
     mergeMethod: hardreset
     reviewers:
-      - @hmcts/no-fault-divorce
+      - no-fault-divorce
