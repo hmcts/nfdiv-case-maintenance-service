@@ -71,6 +71,10 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
         <cve>CVE-2020-13943</cve>
+        <cve>CVE-2020-17527</cve>
+        <cpe>cpe:/a:apache:tomcat</cpe>
+        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
     </suppress>
     <suppress until="2020-11-30Z">
         <notes>
@@ -78,6 +82,11 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
         <cve>CVE-2020-13943</cve>
+        <cve>CVE-2020-17527</cve>
+        <cpe>cpe:/a:apache:tomcat</cpe>
+        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+        <cpe>cpe:/a:java-websocket_project:java-websocket</cpe>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -93,5 +102,14 @@
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/junit/junit@.*$</packageUrl>
         <vulnerabilityName>CVE-2020-15250</vulnerabilityName>
+    </suppress>
+    <suppress>
+        <notes><![CDATA[
+   file name: jackson-databind-2.10.0.jar
+   ]]></notes>
+        <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+        <cpe>cpe:/a:fasterxml:jackson</cpe>
+        <cpe>cpe:/a:fasterxml:jackson-databind</cpe>
+        <cve>CVE-2020-25649</cve>
     </suppress>
 </suppressions>
