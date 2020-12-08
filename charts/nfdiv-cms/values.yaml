@@ -14,8 +14,8 @@ java:
         MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIMETOLIVE: "30000"
         DOCUMENTATION_SWAGGER_ENABLED: true
     keyVaults:
-        "div":
-            resourceGroup: div
+        "nfdiv":
+            resourceGroup: nfdiv
             secrets:
                 - ccd-submission-s2s-auth-secret
                 - idam-secret
