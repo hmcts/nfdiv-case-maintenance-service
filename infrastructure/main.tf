@@ -35,8 +35,8 @@ data "azurerm_key_vault_secret" "draft-store-api-encryption-key" {
   key_vault_id = data.azurerm_key_vault.div_key_vault.id
 }
 
-data "azurerm_key_vault_secret" "oauth-client-secret" {
-  name      = "oauth-client-secret"
+data "azurerm_key_vault_secret" "idam-secret" {
+  name      = "idam-secret"
   key_vault_id = data.azurerm_key_vault.div_key_vault.id
 }
 

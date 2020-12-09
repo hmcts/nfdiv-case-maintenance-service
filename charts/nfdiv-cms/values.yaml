@@ -18,7 +18,7 @@ java:
             resourceGroup: nfdiv
             secrets:
                 - ccd-submission-s2s-auth-secret
-                - oauth-client-secret
+                - idam-secret
                 - draft-store-api-encryption-key
                 - idam-caseworker-username
                 - idam-caseworker-password
