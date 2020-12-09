@@ -37,13 +37,13 @@ idam:
 
 ccd:
   jurisdictionid: DIVORCE
-  casetype: DIVORCE
+  casetype: NO-FAULT-DIVORCE
   eventid:
     create: create
     createhwf: hwfCreate
     solicitorCreate: solicitorCreate
   bulk:
-    casetype: DIVORCE_BulkAction
+    casetype: NO-FAULT-DIVORCE_BulkAction
     eventid:
       create: scheduleCreate
   server:
