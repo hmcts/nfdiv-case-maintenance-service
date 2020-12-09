@@ -71,10 +71,6 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
         <cve>CVE-2020-13943</cve>
-        <cve>CVE-2020-17527</cve>
-        <cpe>cpe:/a:apache:tomcat</cpe>
-        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
-        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
     </suppress>
     <suppress until="2020-11-30Z">
         <notes>
@@ -82,11 +78,6 @@
         </notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
         <cve>CVE-2020-13943</cve>
-        <cve>CVE-2020-17527</cve>
-        <cpe>cpe:/a:apache:tomcat</cpe>
-        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
-        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
-        <cpe>cpe:/a:java-websocket_project:java-websocket</cpe>
     </suppress>
     <suppress>
         <notes><![CDATA[
@@ -117,34 +108,9 @@
    file name: tomcat-embed-core-9.0.39.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
-        <cpe>cpe:/a:apache:tomcat</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-core-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
-        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-core-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
-        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-core-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-core@.*$</packageUrl>
         <cve>CVE-2020-17527</cve>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-websocket-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
         <cpe>cpe:/a:apache:tomcat</cpe>
     </suppress>
     <suppress>
@@ -152,27 +118,10 @@
    file name: tomcat-embed-websocket-9.0.39.jar
    ]]></notes>
         <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
-        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-websocket-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
-        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-websocket-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
+        <cve>CVE-2020-17527</cve>
         <cpe>cpe:/a:java-websocket_project:java-websocket</cpe>
-    </suppress>
-    <suppress>
-        <notes><![CDATA[
-   file name: tomcat-embed-websocket-9.0.39.jar
-   ]]></notes>
-        <packageUrl regex="true">^pkg:maven/org\.apache\.tomcat\.embed/tomcat\-embed\-websocket@.*$</packageUrl>
-        <cve>CVE-2020-17527</cve>
+        <cpe>cpe:/a:apache_tomcat:apache_tomcat</cpe>
+        <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
+        <cpe>cpe:/a:apache:tomcat</cpe>
     </suppress>
 </suppressions>
