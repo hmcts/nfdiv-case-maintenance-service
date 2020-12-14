@@ -3,6 +3,7 @@ java:
     aadIdentityName: nfdiv
     ingressHost: "nfdiv-cms-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     environment:
+        IDAM_API_BASEURL: "https://idam-api.aat.platform.hmcts.net"
         AUTH_PROVIDER_SERVICE_CLIENT_BASEURL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
         DRAFT_STORE_API_BASEURL: "http://draft-store-service-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
         CASE_FORMATTER_SERVICE_API_BASEURL: "http://div-cfs-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
@@ -14,7 +15,7 @@ java:
         MANAGEMENT_ENDPOINT_HEALTH_CACHE_TIMETOLIVE: "30000"
         DOCUMENTATION_SWAGGER_ENABLED: true
     keyVaults:
-        "nfdiv":
+        nfdiv:
             resourceGroup: nfdiv
             secrets:
                 - ccd-submission-s2s-auth-secret
