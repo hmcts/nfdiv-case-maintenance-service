@@ -120,7 +120,7 @@ def versions = [
     gradlePitest: '1.5.2',
     guava: '28.1-jre',
     idamClient: '1.1.0',
-    jackson: '2.10.0',
+    jackson: '2.11.0',
     jsonAssert: '1.2.3',
     junit: '4.13.1',
     lombok: '1.18.12',
@@ -128,7 +128,7 @@ def versions = [
     puppyCrawl: '8.29',
     reformHealth: '0.0.5',
     reformPropertiesVolume: '0.0.4',
-    reformsJavaLogging: '5.1.1',
+    reformsJavaLogging: '5.1.7',
     restAssured: '3.3.0',
     serenity: '2.2.12',
     serenityCucumber: '1.9.51',
@@ -138,10 +138,11 @@ def versions = [
     springfoxSwagger: '2.9.2',
     springSecurityCrypto: '5.2.4.RELEASE',
     springSecurityRsa: '1.0.8.RELEASE',
-    tomcat: '9.0.39',
+    tomcat: '9.0.40',
     unirest: '1.4.9',
     wiremockVersion: '2.8.0',
-    pact_version: '4.1.7'
+    pact_version: '4.1.7',
+    httpComponents: '4.5.13'
 ]
 
 dependencies {
@@ -178,10 +179,16 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version : versions.commonsLang3
     implementation group: 'uk.gov.hmcts.reform', name: 'health-spring-boot-starter', version: versions.reformHealth
     implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: versions.reformPropertiesVolume
+
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.httpComponents
+    implementation group: 'org.apache.httpcomponents', name: 'fluent-hc', version: versions.httpComponents
+
     implementation group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformsJavaLogging
     implementation group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformsJavaLogging
     implementation group: 'uk.gov.hmcts.reform', name: 'logging-spring', version: versions.reformsJavaLogging
-    implementation group: 'uk.gov.hmcts.reform', name: 'logging-httpcomponents', version: versions.reformsJavaLogging
+    implementation (group: 'uk.gov.hmcts.reform', name: 'logging-httpcomponents', version: versions.reformsJavaLogging){
+        exclude group: 'org.apache.httpcomponents', 'module': 'httpclient'
+    }
     implementation group: 'uk.gov.hmcts.reform', name: 'idam-client', version: versions.idamClient
     implementation (group: 'uk.gov.hmcts.reform', name:'service-auth-provider-client', version: versions.serviceTokenGenerator)
         {
@@ -336,12 +343,15 @@ dependencies {
     integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     integrationTestImplementation(sourceSets.test.output)
 
+    contractTestCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.httpComponents
+    contractTestCompile group: 'org.apache.httpcomponents', name: 'fluent-hc', version: versions.httpComponents
+
     contractTestCompile group: 'au.com.dius.pact.consumer', name: 'junit5', version: versions.pact_version
-    contractTestCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version : '2.9.8'
+    contractTestCompile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
     contractTestCompile group: 'au.com.dius.pact.consumer', name: 'java8', version: versions.pact_version
     contractTestRuntime group: 'au.com.dius.pact.consumer', name: 'junit5', version: versions.pact_version
     contractTestRuntime group: 'au.com.dius.pact.consumer', name: 'java8', version: versions.pact_version
-    contractTestRuntime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version : '2.9.8'
+    contractTestRuntime group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.jackson
 
     contractTestCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test'
     contractTestCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
