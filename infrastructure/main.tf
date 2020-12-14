@@ -49,3 +49,20 @@ data "azurerm_key_vault_secret" "idam-caseworker-password" {
   name      = "idam-caseworker-password"
   key_vault_id = data.azurerm_key_vault.div_key_vault.id
 }
+
+# Copy S2S key from S2S vault to shared vault
+data "azurerm_key_vault" "s2s_vault" {
+    name = "s2s-${local.local_env}"
+    resource_group_name = "rpe-service-auth-provider-${local.local_env}"
+}
+
+data "azurerm_key_vault_secret" "s2s_key" {
+    name      = "microservicekey-nfdiv-cms"
+    key_vault_id = "${data.azurerm_key_vault.s2s_vault.id}"
+}
+
+resource "azurerm_key_vault_secret" "local_s2s_key" {
+    name         = "cms-service-key"
+    value        = "${data.azurerm_key_vault_secret.s2s_key.value}"
+    key_vault_id = "${data.azurerm_key_vault.div_key_vault.id}"
+}
