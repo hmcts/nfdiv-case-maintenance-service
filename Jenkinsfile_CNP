@@ -5,7 +5,7 @@ properties([
     [
         $class: 'GithubProjectProperty',
         displayName: 'Divorce Case Maintenance Service',
-        projectUrlStr: 'https://github.com/hmcts/div-case-maintenance-service'
+        projectUrlStr: 'https://github.com/hmcts/nfdiv-case-maintenance-service'
     ],
     pipelineTriggers([
         [$class: 'GitHubPushTrigger']
@@ -15,11 +15,11 @@ properties([
 @Library("Infrastructure")
 
 def type = "java"
-def product = "div"
+def product = "nfdiv"
 def component = "cms"
 
 def secrets = [
-    'div-${env}': [
+    'nfdiv-${env}': [
         secret("idam-secret", "AUTH_IDAM_CLIENT_SECRET"),
         secret("ccd-submission-s2s-auth-secret", "AUTH_PROVIDER_SERVICE_CLIENT_KEY"),
         secret("idam-secret", "AUTH2_CLIENT_SECRET"),

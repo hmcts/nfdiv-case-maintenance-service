@@ -1,0 +1,16 @@
+on:
+  schedule:
+    # Run everyday at 6.00AM
+    - cron:  '0 6 * * *' 
+jobs:
+  repo-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Sync Action
+        uses: wei/git-sync@v2.1.0
+        with:
+          source_repo: "https://github.com/hmcts/div-case-maintenance-service.git"
+          source_branch: "master"
+          destination_repo: "git@github.com:hmcts/nfdiv-case-maintenance-service.git"
+          destination_branch: "upstream"
+          ssh_private_key: ${{ secrets.SSH_PRIVATE_KEY }}

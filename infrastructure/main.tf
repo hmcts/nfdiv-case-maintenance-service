@@ -15,8 +15,8 @@ locals {
   previewVaultName    = "${var.raw_product}-aat"
   nonPreviewVaultName = "${var.raw_product}-${var.env}"
   vaultName           = (var.env == "preview" || var.env == "spreview") ? local.previewVaultName : local.nonPreviewVaultName
-  asp_name            = var.env == "prod" ? "div-cms-prod" : "${var.raw_product}-${var.env}"
-  asp_rg              = var.env == "prod" ? "div-cms-prod" : "${var.raw_product}-${var.env}"
+  asp_name            = var.env == "prod" ? "nfdiv-cms-prod" : "${var.raw_product}-${var.env}"
+  asp_rg              = var.env == "prod" ? "nfdiv-cms-prod" : "${var.raw_product}-${var.env}"
 }
 
 data "azurerm_key_vault" "div_key_vault" {
