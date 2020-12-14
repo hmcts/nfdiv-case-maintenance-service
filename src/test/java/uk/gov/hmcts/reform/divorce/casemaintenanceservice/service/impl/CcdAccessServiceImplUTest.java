@@ -58,7 +58,7 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.Cm
 @RunWith(MockitoJUnitRunner.class)
 public class CcdAccessServiceImplUTest {
     private static final String JURISDICTION_ID = "DIVORCE";
-    private static final String CASE_TYPE = "DIVORCE";
+    private static final String CASE_TYPE = "NO_FAULT_DIVORCE";
 
     private static final String RESPONDENT_AUTHORISATION = "Bearer RespondentAuthToken";
     private static final String PET_SOLICITOR_AUTHORISATION = "Bearer PetSolicitorAuthorisation";
