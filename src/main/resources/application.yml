@@ -28,8 +28,8 @@ idam:
     username: ${IDAM_CASEWORKER_USERNAME:dummycaseworker@test.com}
     password: ${IDAM_CASEWORKER_PASSWORD:dummy}
   s2s-auth:
-    microservice: ${AUTH_PROVIDER_SERVICE_CLIENT_MICROSERVICE:divorce_ccd_submission}
-    totp_secret: ${AUTH_PROVIDER_SERVICE_CLIENT_KEY:AZBYCXDWEVFUGTHS}
+    microservice: ${AUTH_PROVIDER_SERVICE_CLIENT_MICROSERVICE:nfdiv_cms}
+    totp_secret: ${AUTH_PROVIDER_SERVICE_CLIENT_KEY:dummysecret}
     url: ${AUTH_PROVIDER_SERVICE_CLIENT_BASEURL:http://localhost:4502}
     port: ${AUTH_PROVIDER_SERVICE_CLIENT_PORT:4502}
     health:
