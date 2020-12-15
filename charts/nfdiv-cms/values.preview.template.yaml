@@ -2,3 +2,5 @@ java:
     # Don't modify below here
     image: ${IMAGE_NAME}
     ingressHost: ${SERVICE_FQDN}
+    environment:
+        CASE_DATA_STORE_BASEURL: "http://ccd-data-store-api-nfdiv-ccd-definitions-pr-7.service.core-compute-preview.internal"
