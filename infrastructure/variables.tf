@@ -1,5 +1,5 @@
 variable "raw_product" {
-  default = "div"
+  default = "nfdiv"
 }
 
 variable "env" {}

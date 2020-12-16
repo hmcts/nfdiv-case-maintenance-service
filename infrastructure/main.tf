@@ -15,8 +15,8 @@ locals {
   previewVaultName    = "${var.raw_product}-aat"
   nonPreviewVaultName = "${var.raw_product}-${var.env}"
   vaultName           = (var.env == "preview" || var.env == "spreview") ? local.previewVaultName : local.nonPreviewVaultName
-  asp_name            = var.env == "prod" ? "div-cms-prod" : "${var.raw_product}-${var.env}"
-  asp_rg              = var.env == "prod" ? "div-cms-prod" : "${var.raw_product}-${var.env}"
+  asp_name            = var.env == "prod" ? "nfdiv-cms-prod" : "${var.raw_product}-${var.env}"
+  asp_rg              = var.env == "prod" ? "nfdiv-cms-prod" : "${var.raw_product}-${var.env}"
 }
 
 data "azurerm_key_vault" "div_key_vault" {
@@ -24,11 +24,6 @@ data "azurerm_key_vault" "div_key_vault" {
   resource_group_name = local.vaultName
 }
 
-data "azurerm_key_vault_secret" "ccd-submission-s2s-auth-secret" {
-  name      = "ccd-submission-s2s-auth-secret"
-  key_vault_id = data.azurerm_key_vault.div_key_vault.id
-
-}
 
 data "azurerm_key_vault_secret" "draft-store-api-encryption-key" {
   name      = "draft-store-api-encryption-key"
@@ -48,4 +43,21 @@ data "azurerm_key_vault_secret" "idam-caseworker-username" {
 data "azurerm_key_vault_secret" "idam-caseworker-password" {
   name      = "idam-caseworker-password"
   key_vault_id = data.azurerm_key_vault.div_key_vault.id
+}
+
+# Copy S2S key from S2S vault to shared vault
+data "azurerm_key_vault" "s2s_vault" {
+    name = "s2s-${local.local_env}"
+    resource_group_name = "rpe-service-auth-provider-${local.local_env}"
+}
+
+data "azurerm_key_vault_secret" "s2s_key" {
+    name      = "microservicekey-nfdiv-cms"
+    key_vault_id = "${data.azurerm_key_vault.s2s_vault.id}"
+}
+
+resource "azurerm_key_vault_secret" "local_s2s_key" {
+    name         = "cms-service-key"
+    value        = "${data.azurerm_key_vault_secret.s2s_key.value}"
+    key_vault_id = "${data.azurerm_key_vault.div_key_vault.id}"
 }

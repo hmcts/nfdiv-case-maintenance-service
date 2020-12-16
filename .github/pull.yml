@@ -1,0 +1,7 @@
+version: "1"
+rules:
+  - base: master
+    upstream: upstream
+    mergeMethod: hardreset
+    reviewers:
+      - hmcts/no-fault-divorce
