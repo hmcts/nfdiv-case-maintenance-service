@@ -3,7 +3,7 @@
     "CaseList" : [ {
         "value" : {
             "CaseReference" : {
-                "CaseReference" : "1524482372442611"
+                "CaseReference" : "1608139804813327"
             },
             "DNApprovalDate" : "2019-01-01",
             "FamilyManReference" : "FA1215701",
@@ -13,7 +13,7 @@
     } ],
     "CaseAcceptedList" : [ {
         "value" : {
-            "CaseReference" : "1524482372442611"
+            "CaseReference" : "1608139804813327"
         }
     } ]
 }

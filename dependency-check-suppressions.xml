@@ -124,4 +124,7 @@
         <cpe>cpe:/a:apache_software_foundation:tomcat</cpe>
         <cpe>cpe:/a:apache:tomcat</cpe>
     </suppress>
+    <suppress>
+        <cve>CVE-2020-8908</cve>
+    </suppress>
 </suppressions>
