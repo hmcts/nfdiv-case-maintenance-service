@@ -9,6 +9,8 @@ Divorce system.
 
 - [JDK 11](https://openjdk.java.net/)
 - [Docker](https://www.docker.com)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+
 
 **Building**
 
@@ -30,16 +32,11 @@ This command will run the build task but it will exclude the test task
 
 **Running**
 
-When the distribution has been created in `build/install/div-case-maintenance-service` directory,
-you can run the application by executing following command:
+Running the service locally requires several APIs in the AAT environment. You will need an active VPN, to have permission to read the nfdiv-aat vault and to be logged into azure CLI.
 
-```bash
-    docker-compose up
 ```
-
-(If `build/install/div-case-maintenance-service` does not exist try running `./gradlew build` again )
-As a result the following container(s) will get created and started:
- - long living container for API application exposing port `4010`
+./gradlew bootRunLocal
+```
 
 ##Testing
 
@@ -69,13 +66,15 @@ To run all mutation tests execute the following command:
 
 To run all integration tests locally:
 
-* Make a copy of `src/main/resources/example-application-aat.yml` as `src/main/resources/application-aat.yml`
-* Make a copy of `src/integrationTest/resources/example-application-local.properties` as `src/integrationTest/resources/application-local.properties`
-* Replace the `replace_me` secrets in the _newly created_ files. You can get the values from SCM and Azure secrets key vault (the new files are in .gitignore and should ***not*** be committed to git)
-* Start the app with AAT config:
-  * Using gradle: `./gradlew clean bootRunAat`
-  * Using IntelliJ: edit Run Configuration and set Environment variables to `http_proxy=http://proxyout.reform.hmcts.net:8080;SPRING_PROFILES_ACTIVE=aat`
-* Start the test with AAT config using `./gradlew clean functional`
+Start the app:
+
+```
+./gradlew bootRunLocal
+```
+
+Run the tests:
+
+`./gradlew functionalLocal`
 
 ##Developing
 **API documentation**

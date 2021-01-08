@@ -7,7 +7,7 @@ output "vaultName" {
 }
 
 output "test_environment" {
-  value = local.local_env
+    value = local.local_env
 }
 
 output "idam_api_baseurl" {
