@@ -35,7 +35,7 @@ This command will run the build task but it will exclude the test task
 Running the service locally requires several APIs in the AAT environment. You will need an active VPN, to have permission to read the nfdiv-aat vault and to be logged into azure CLI.
 
 ```
-./gradlew bootRunLocal
+./gradlew bootRun
 ```
 
 ##Testing
@@ -69,12 +69,12 @@ To run all integration tests locally:
 Start the app:
 
 ```
-./gradlew bootRunLocal
+./gradlew bootRun
 ```
 
 Run the tests:
 
-`./gradlew functionalLocal`
+`./gradlew functional`
 
 ##Developing
 **API documentation**
