@@ -3,7 +3,7 @@
 This is a case maintenance service. This service facilitates all the communication between Core Case Data and the
 Divorce system.
 
-## Setup.
+## Setup
 
 **Prerequisites**
 
