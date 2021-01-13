@@ -58,6 +58,6 @@ data "azurerm_key_vault_secret" "s2s_key" {
 
 resource "azurerm_key_vault_secret" "local_s2s_key" {
     name         = "cms-service-key"
-    value        = "${data.azurerm_key_vault_secret.s2s_key.value}"
+    value        = data.azurerm_key_vault_secret.s2s_key.value
     key_vault_id = data.azurerm_key_vault.div_key_vault.id
 }
