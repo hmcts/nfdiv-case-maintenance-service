@@ -59,12 +59,14 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
 
     protected Long getCaseIdFromSubmittingANewCase(UserDetails userDetails) throws Exception {
         Response cmsResponse = submitCase("addresses-no-hwf.json", userDetails);
+        assertOkResponseAndCaseIdIsNotZero(cmsResponse);
 
         return cmsResponse.path("id");
     }
 
     protected Long getCaseIdFromCompletedCase(UserDetails userDetails) throws Exception {
         Response cmsResponse = submitCase("completed-case-submitted.json", userDetails);
+        assertOkResponseAndCaseIdIsNotZero(cmsResponse);
 
         return cmsResponse.path("id");
     }

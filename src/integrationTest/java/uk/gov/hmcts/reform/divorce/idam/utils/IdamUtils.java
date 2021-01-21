@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import uk.gov.hmcts.reform.divorce.model.GeneratePinRequest;
 import uk.gov.hmcts.reform.divorce.model.PinResponse;
 import uk.gov.hmcts.reform.divorce.model.RegisterUserRequest;
+import uk.gov.hmcts.reform.divorce.model.UserDetails;
 import uk.gov.hmcts.reform.divorce.util.ResourceLoader;
 
 import java.util.Base64;
@@ -43,8 +44,16 @@ public abstract class IdamUtils {
             .andReturn();
     }
 
-    public final String getUserId(String authorisation) {
-        return retrieveUserDetails(authorisation).jsonPath().get("id").toString();
+    public final UserDetails getUserDetails(String authorisation) {
+        Response response = retrieveUserDetails(authorisation);
+
+        return UserDetails.builder()
+            .id(response.jsonPath().getString("id"))
+            .username(response.jsonPath().getString("forename"))
+            .emailAddress(response.jsonPath().getString("email"))
+            .authToken(authorisation)
+            .roles(response.jsonPath().getList("roles"))
+            .build();
     }
 
     public final String authenticateUser(String emailAddress, String password) {
@@ -110,5 +119,11 @@ public abstract class IdamUtils {
 
     private String idamCreateUrl() {
         return idamUserBaseUrl + "/testing-support/accounts";
+    }
+
+    public void deleteUser(String emailAddress) {
+        SerenityRest.given()
+            .relaxedHTTPSValidation()
+            .delete("/testing-support/accounts" + emailAddress);
     }
 }

@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.junit.runners.SerenityRunner;
 import net.serenitybdd.junit.spring.integration.SpringIntegrationMethodRule;
 import org.assertj.core.util.Strings;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,8 @@ import uk.gov.hmcts.reform.divorce.support.IdamTestSupport;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.PostConstruct;
 
 @Slf4j
@@ -25,41 +28,35 @@ public abstract class IntegrationTest {
     @Value("${case.maintenance.service.base.uri}")
     protected String serverUrl;
 
-    @Value("${http.proxy:#{null}}")
-    protected String httpProxy;
-
     @Autowired
     protected IdamTestSupport idamTestSupport;
 
     @Rule
     public SpringIntegrationMethodRule springMethodIntegration;
 
+    private final List<UserDetails> createdUsers = new ArrayList<>();
+
     protected IntegrationTest() {
         this.springMethodIntegration = new SpringIntegrationMethodRule();
     }
 
-    @PostConstruct
-    public void init() {
-        if (!Strings.isNullOrEmpty(httpProxy)) {
+    @After
+    public void onDestroy() {
+        log.info("Destroying created users");
+        for (UserDetails details : createdUsers) {
             try {
-                URL proxy = new URL(httpProxy);
-                // check proxy connectivity
-                if (!InetAddress.getByName(proxy.getHost()).isReachable(2000)) {
-                    throw new IOException();
-                }
-                System.setProperty("http.proxyHost", proxy.getHost());
-                System.setProperty("http.proxyPort", Integer.toString(proxy.getPort()));
-                System.setProperty("https.proxyHost", proxy.getHost());
-                System.setProperty("https.proxyPort", Integer.toString(proxy.getPort()));
-            } catch (IOException e) {
-                log.error("Error setting up proxy - are you connected to the VPN?", e);
-                throw new RuntimeException("Error setting up proxy", e);
+                idamTestSupport.deleteUser(details.getEmailAddress());
+            } catch (Exception e) {
+                log.error("User deletion failed " + details.getEmailAddress(), e);
             }
         }
     }
 
     protected UserDetails getUserDetails() {
-        return idamTestSupport.createAnonymousCitizenUser();
+        UserDetails details = idamTestSupport.createAnonymousCitizenUser();
+        createdUsers.add(details);
+
+        return details;
     }
 
     protected UserDetails getSolicitorUser() {

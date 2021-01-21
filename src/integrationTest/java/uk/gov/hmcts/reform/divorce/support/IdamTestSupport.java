@@ -51,63 +51,45 @@ public class IdamTestSupport {
 
     public UserDetails getCaseworkerUser() {
         return wrapInRetry(() -> {
-            synchronized (this) {
-                if (defaultCaseWorkerUser == null) {
-                    String emailAddress = CASE_WORKER_USERNAME + EMAIL_DOMAIN;
-                    defaultCaseWorkerUser = getUser(CASE_WORKER_USERNAME, emailAddress, GENERIC_PASSWORD);
-                }
 
-                return defaultCaseWorkerUser;
+            if (defaultCaseWorkerUser == null) {
+                String emailAddress = CASE_WORKER_USERNAME + EMAIL_DOMAIN;
+                defaultCaseWorkerUser = getUserDetails(emailAddress, GENERIC_PASSWORD);
             }
+
+            return defaultCaseWorkerUser;
+
         });
     }
 
     public UserDetails getSolicitorUser() {
         return wrapInRetry(() -> {
-            synchronized (this) {
-                if (defaultSolicitorUser == null) {
-                    String emailAddress = SOLICITOR_USER_NAME + EMAIL_DOMAIN;
-                    defaultSolicitorUser = getUser(SOLICITOR_USER_NAME, emailAddress, GENERIC_PASSWORD);
-                }
 
-                return defaultSolicitorUser;
+            if (defaultSolicitorUser == null) {
+                String emailAddress = SOLICITOR_USER_NAME + EMAIL_DOMAIN;
+                defaultSolicitorUser = getUserDetails(emailAddress, GENERIC_PASSWORD);
             }
+
+            return defaultSolicitorUser;
+
         });
     }
 
     public UserDetails createAnonymousCitizenUser() {
         return wrapInRetry(() -> {
-            synchronized (this) {
-                final String username = "simulate-delivered" + UUID.randomUUID();
-                final String password = GENERIC_PASSWORD;
+            final String username = "simulate-delivered" + UUID.randomUUID();
+            final UserDetails details = createNewUser(username, GENERIC_PASSWORD);
 
-                return createNewUser(username, password);
+            if (details.getRoles().size() != 2) {
+                throw new RuntimeException("Not all roles created on citizen user");
             }
+
+            return details;
         });
     }
 
     private UserDetails createNewUser(String username, String password) {
         final String emailAddress =  username + "@mailinator.com";
-
-        createCitizenUserInIdam(username, emailAddress, password);
-
-        return getUser(username, emailAddress, password);
-    }
-
-    private UserDetails getUser(String username, String emailAddress, String password) {
-        final String authToken = idamUtils.authenticateUser(emailAddress, password);
-        final String userId = idamUtils.getUserId(authToken);
-
-        return UserDetails.builder()
-            .id(userId)
-            .username(username)
-            .emailAddress(emailAddress)
-            .password(password)
-            .authToken(authToken)
-            .build();
-    }
-
-    private void createCitizenUserInIdam(String username, String emailAddress, String password) {
         final RegisterUserRequest registerUserRequest =
             RegisterUserRequest.builder()
                 .email(emailAddress)
@@ -119,12 +101,15 @@ public class IdamTestSupport {
 
         idamUtils.createUserInIdam(registerUserRequest);
 
-        try {
-            //give the user some time to warm up..
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            log.debug("IDAM waiting thread was interrupted");
-        }
+        return getUserDetails(emailAddress, password);
+    }
+
+    private UserDetails getUserDetails(String emailAddress, String password) {
+        final String authToken = idamUtils.authenticateUser(emailAddress, password);
+        final UserDetails details = idamUtils.getUserDetails(authToken);
+        details.setPassword(password);
+
+        return details;
     }
 
     private UserDetails wrapInRetry(Supplier<UserDetails> supplier) {
@@ -135,6 +120,7 @@ public class IdamTestSupport {
             try {
                 return supplier.get();
             } catch (Exception e) {
+                System.out.println("IDAM failed");
                 if (++count == maxTries) {
                     log.error("Exhausted the number of maximum retry attempts..", e);
                     throw e;
@@ -145,8 +131,12 @@ public class IdamTestSupport {
                 } catch (InterruptedException ex) {
                     log.error("Error during sleep", ex);
                 }
-                log.trace("Encountered an error creating a user/token - retrying", e);
+                log.error("Encountered an error creating a user/token - retrying", e);
             }
         }
+    }
+
+    public void deleteUser(String emailAddress) {
+        idamUtils.deleteUser(emailAddress);
     }
 }

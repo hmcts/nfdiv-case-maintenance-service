@@ -35,6 +35,7 @@ public class CcdClientSupport {
     private AuthTokenGenerator authTokenGenerator;
 
     public CaseDetails submitCaseForCitizen(Object data, UserDetails userDetails) {
+        System.out.println("Submitting case");
         final String serviceToken = authTokenGenerator.generate();
 
         StartEventResponse startEventResponse = coreCaseDataApi.startForCitizen(

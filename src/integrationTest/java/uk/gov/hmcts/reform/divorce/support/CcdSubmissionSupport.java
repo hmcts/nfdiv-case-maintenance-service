@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.divorce.support;
 
 import io.restassured.response.Response;
+import io.restassured.response.ResponseBodyData;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -12,10 +13,9 @@ import uk.gov.hmcts.reform.divorce.util.RestUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public abstract class CcdSubmissionSupport extends IntegrationTest {
     private static final String PAYLOAD_CONTEXT_PATH = "ccd-submission-payload/";
@@ -113,13 +113,16 @@ public abstract class CcdSubmissionSupport extends IntegrationTest {
 
         if (userToken != null) {
             headers.put(HttpHeaders.AUTHORIZATION, userToken);
+        } else {
+            throw new RuntimeException("user token null");
         }
 
         return headers;
     }
 
     protected void assertOkResponseAndCaseIdIsNotZero(Response cmsResponse) {
-        assertEquals(cmsResponse.getBody().asString(), HttpStatus.OK.value(), cmsResponse.getStatusCode());
+        String safeBody = Optional.ofNullable(cmsResponse.getBody()).map(ResponseBodyData::asString).orElse("No body");
+        assertEquals(safeBody, HttpStatus.OK.value(), cmsResponse.getStatusCode());
         assertNotEquals((Long)0L, cmsResponse.getBody().path("caseId"));
     }
 
