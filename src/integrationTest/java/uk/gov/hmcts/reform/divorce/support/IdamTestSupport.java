@@ -120,7 +120,6 @@ public class IdamTestSupport {
             try {
                 return supplier.get();
             } catch (Exception e) {
-                System.out.println("IDAM failed");
                 if (++count == maxTries) {
                     log.error("Exhausted the number of maximum retry attempts..", e);
                     throw e;
