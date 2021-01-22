@@ -48,12 +48,12 @@ public class LinkRespondentTest extends PetitionSupport {
     @Test
     public void givenCaseAlreadyLinked_whenLinkRespondent_thenReturnUnauthorized() {
         final String respondentFirstName = "respondent-" + UUID.randomUUID().toString();
+
         final PinResponse pinResponse = idamTestSupport.createPinUser(respondentFirstName);
 
         Map<String, Object> caseData = ResourceLoader.loadJsonToObject(PAYLOAD_CONTEXT_PATH + "linked-case.json", Map.class);
 
-        UserDetails moreDetails = getUserDetails();
-        Long caseId = ccdClientSupport.submitCaseForCitizen(caseData, moreDetails).getId();
+        Long caseId = ccdClientSupport.submitCaseForCitizen(caseData, getUserDetails()).getId();
 
         Map<String, Object> updateCaseData = new HashMap<>();
         updateCaseData.put(RESP_LETTER_HOLDER_ID_FIELD, pinResponse.getUserId());

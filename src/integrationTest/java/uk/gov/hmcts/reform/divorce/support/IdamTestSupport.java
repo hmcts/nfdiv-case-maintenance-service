@@ -102,6 +102,7 @@ public class IdamTestSupport {
         idamUtils.createUserInIdam(registerUserRequest);
 
         try {
+            //give the user some time to warm up..
             Thread.sleep(1000);
         } catch (InterruptedException e) {
             log.debug("IDAM waiting thread was interrupted");
@@ -136,7 +137,7 @@ public class IdamTestSupport {
                 } catch (InterruptedException ex) {
                     log.error("Error during sleep", ex);
                 }
-                log.error("Encountered an error creating a user/token - retrying", e);
+                log.trace("Encountered an error creating a user/token - retrying", e);
             }
         }
     }
