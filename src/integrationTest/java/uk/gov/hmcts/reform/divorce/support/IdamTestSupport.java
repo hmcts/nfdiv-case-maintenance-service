@@ -101,6 +101,11 @@ public class IdamTestSupport {
 
         idamUtils.createUserInIdam(registerUserRequest);
 
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            log.error("Sleep after user creation interrupted", e);
+        }
         return getUserDetails(emailAddress, password);
     }
 
