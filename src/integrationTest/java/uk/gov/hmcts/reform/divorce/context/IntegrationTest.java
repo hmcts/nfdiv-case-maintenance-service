@@ -3,6 +3,7 @@ package uk.gov.hmcts.reform.divorce.context;
 import lombok.extern.slf4j.Slf4j;
 import net.serenitybdd.junit.runners.SerenityRunner;
 import net.serenitybdd.junit.spring.integration.SpringIntegrationMethodRule;
+import org.junit.After;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,18 @@ public abstract class IntegrationTest {
 
     protected IntegrationTest() {
         this.springMethodIntegration = new SpringIntegrationMethodRule();
+    }
+
+    @After
+    public void onDestroy() {
+        log.info("Destroying created users");
+        for (UserDetails details : createdUsers) {
+            try {
+                idamTestSupport.deleteUser(details.getEmailAddress());
+            } catch (Exception e) {
+                log.error("User deletion failed " + details.getEmailAddress(), e);
+            }
+        }
     }
 
     protected UserDetails getUserDetails() {
