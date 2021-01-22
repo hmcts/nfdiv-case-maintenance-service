@@ -104,8 +104,9 @@ public class IdamTestSupport {
         try {
             Thread.sleep(1000);
         } catch (InterruptedException e) {
-            log.error("Sleep after user creation interrupted", e);
+            log.debug("IDAM waiting thread was interrupted");
         }
+
         return getUserDetails(emailAddress, password);
     }
 
