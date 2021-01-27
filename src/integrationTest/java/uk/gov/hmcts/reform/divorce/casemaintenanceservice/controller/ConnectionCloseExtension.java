@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.common.FileSource;
 import com.github.tomakehurst.wiremock.extension.Parameters;

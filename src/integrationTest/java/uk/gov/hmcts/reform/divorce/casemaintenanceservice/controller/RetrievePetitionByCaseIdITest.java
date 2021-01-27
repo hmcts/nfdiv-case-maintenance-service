@@ -1,8 +1,6 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.google.common.collect.ImmutableMap;
-import feign.FeignException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,18 +20,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.domain.model.CitizenCaseState;
-
-import java.util.Arrays;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_SERVICE_TOKEN;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_USER_EMAIL;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties.D8_PETITIONER_EMAIL;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = CaseMaintenanceServiceApplication.class)
@@ -45,9 +37,8 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.Cc
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class SearchCasesITest extends MockSupport {
-    private static final String API_URL = "/casemaintenance/version/1/search";
-
+public class RetrievePetitionByCaseIdITest extends MockSupport {
+    private static final String API_URL = "/casemaintenance/version/1/case";
 
     @Value("${ccd.jurisdictionid}")
     private String jurisdictionId;
@@ -62,60 +53,76 @@ public class SearchCasesITest extends MockSupport {
     private MockMvc webClient;
 
     @Test
-    public void whenSearchCases_thenReturnCcdResult() throws Exception {
+    public void givenCaseExistsWithId_whenRetrievePetitionById_thenReturnCaseDetails()
+        throws Exception {
         final String message = getUserDetails();
-
-        final CaseDetails caseDetails2 = createCaseDetails(1L, CitizenCaseState.ISSUED.getValue());
-        final CaseDetails caseDetails3 = createCaseDetails(2L, CitizenCaseState.PENDING_REJECTION.getValue());
-        final CaseDetails caseDetails4 = createCaseDetails(3L, CitizenCaseState.PENDING_REJECTION.getValue());
-
-        String query = "{}";
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-        SearchResult expectedResult = SearchResult.builder()
-            .cases(Arrays.asList(caseDetails2, caseDetails3, caseDetails4))
-            .total(10)
-            .build();
+
+        final Long caseId = 1L;
+        final String testCaseId = String.valueOf(caseId);
+
+        final CaseDetails caseDetails = createCaseDetails(caseId, "state");
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .searchCases(USER_TOKEN, TEST_SERVICE_TOKEN, caseType, query))
-            .thenReturn(expectedResult);
+            .readForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, testCaseId))
+            .thenReturn(caseDetails);
 
-        webClient.perform(MockMvcRequestBuilders.post(API_URL)
-            .content(query)
+        webClient.perform(MockMvcRequestBuilders.get(API_URL + "/" + testCaseId)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(content()
                 .json(ObjectMapperTestUtil
-                    .convertObjectToJsonString(expectedResult)));
+                    .convertObjectToJsonString(caseDetails)));
     }
 
     @Test
-    public void givenCcdError_whenSearchCases_thenPropagateCcdError() throws Exception {
-        final String message = getUserDetails();
-        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
+    public void givenCaseExistsWithId_whenRetrievePetitionByIdWithCaseworker_thenReturnCaseDetails()
+        throws Exception {
+        final String message = getCaseWorkerUserDetails();
+        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(BEARER_CASE_WORKER_TOKEN), message);
 
-        String query = "{}";
+        final Long caseId = 1L;
+        final String testCaseId = String.valueOf(caseId);
+
+        final CaseDetails caseDetails = createCaseDetails(caseId, "state");
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .searchCases(USER_TOKEN, TEST_SERVICE_TOKEN, caseType, query))
-            .thenThrow(new FeignException.BadRequest("Malformed url", query.getBytes()));
+            .readForCaseWorker(BEARER_CASE_WORKER_TOKEN, TEST_SERVICE_TOKEN, CASE_WORKER_USER_ID,
+                jurisdictionId, caseType, testCaseId))
+            .thenReturn(caseDetails);
 
-        webClient.perform(MockMvcRequestBuilders.post(API_URL)
-            .content(query)
+        webClient.perform(MockMvcRequestBuilders.get(API_URL + "/" + testCaseId)
+            .header(HttpHeaders.AUTHORIZATION, BEARER_CASE_WORKER_TOKEN)
+            .accept(MediaType.APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(content()
+                .json(ObjectMapperTestUtil
+                    .convertObjectToJsonString(caseDetails)));
+    }
+
+    @Test
+    public void givenCaseDoesNotExistWithId_whenRetrievePetitionById_thenReturnNotFound() throws Exception {
+        final String message = getUserDetails();
+        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
+
+        final Long caseId = 1L;
+        final String testCaseId = String.valueOf(caseId);
+
+        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
+        when(coreCaseDataApi
+            .readForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, testCaseId))
+            .thenReturn(null);
+
+        webClient.perform(MockMvcRequestBuilders.get(API_URL + "/" + testCaseId)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().is4xxClientError())
-            .andExpect(content().string("Malformed url - {}"));
+            .andExpect(status().isNotFound());
     }
 
     private CaseDetails createCaseDetails(Long id, String state) {
-        return CaseDetails.builder()
-            .id(id)
-            .state(state)
-            .data(ImmutableMap.of(D8_PETITIONER_EMAIL, TEST_USER_EMAIL))
-            .build();
+        return CaseDetails.builder().id(id).state(state).build();
     }
 }

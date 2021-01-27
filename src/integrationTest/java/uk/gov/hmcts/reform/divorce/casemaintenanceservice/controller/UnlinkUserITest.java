@@ -1,12 +1,16 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.StringValuePattern;
+import feign.FeignException;
+import feign.Request;
+import feign.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -16,12 +20,16 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.web.client.HttpClientErrorException;
+import uk.gov.hmcts.reform.ccd.client.CaseUserApi;
+import uk.gov.hmcts.reform.ccd.client.model.CaseUser;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.DraftStoreClient;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.delete;
+import java.util.Collections;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_SERVICE_TOKEN;
@@ -36,39 +44,49 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.T
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class DeleteDraftServiceITest extends MockSupport {
-    private static final String API_URL = "/casemaintenance/version/1/drafts";
-    private static final String DRAFTS_CONTEXT_PATH = "/drafts";
+public class UnlinkUserITest  extends MockSupport {
+
+    private static final String CASE_ID = "caseId";
+
+    private static final String API_URL = String.format("/casemaintenance/version/1/link-respondent/%s", CASE_ID);
+    private static final int NOT_FOUND = 404;
+
+    @Value("${ccd.jurisdictionid}")
+    private String jurisdictionId;
+
+    @Value("${ccd.casetype}")
+    private String caseType;
+
+    @MockBean
+    private CaseUserApi caseUserApi;
 
     @Autowired
     private MockMvc webClient;
 
     @Test
-    public void givenJWTTokenIsNull_whenDeleteDraft_thenReturnBadRequest() throws Exception {
+    public void givenAuthTokenIsNull_whenUnlinkUser_thenReturnBadRequest() throws Exception {
         webClient.perform(MockMvcRequestBuilders.delete(API_URL))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void givenCouldNotConnectToAuthService_whenDeleteDraft_thenReturnHttp503() throws Exception {
+    public void givenAllGoesWell_whenUnlinkRespondent_thenReturn200Response() throws Exception {
         final String message = getUserDetails();
-
-        when(serviceTokenGenerator.generate()).thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-
-        webClient.perform(MockMvcRequestBuilders.delete(API_URL)
-            .header(HttpHeaders.AUTHORIZATION, USER_TOKEN))
-            .andExpect(status().isServiceUnavailable());
-    }
-
-    @Test
-    public void givenNoDrafts_whenDeleteDraft_thenReturnHttp200() throws Exception {
-        final String message = getUserDetails();
+        stubCaseWorkerAuthentication(HttpStatus.OK);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
 
-        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
+        doNothing()
+            .when(caseUserApi)
+            .updateCaseRolesForUser(
+                eq(BEARER_CASE_WORKER_TOKEN),
+                eq(TEST_SERVICE_TOKEN),
+                eq(CASE_ID),
+                eq(USER_ID),
+                any(CaseUser.class)
+            );
 
         webClient.perform(MockMvcRequestBuilders.delete(API_URL)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN))
@@ -76,24 +94,31 @@ public class DeleteDraftServiceITest extends MockSupport {
     }
 
     @Test
-    public void givenThereIsDrafts_whenDeleteDraft_thenReturnHttp200() throws Exception {
+    public void givenCaseNotFound_whenUnlinkRespondent_thenReturnNotFoundResponse() throws Exception {
         final String message = getUserDetails();
+
+        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
+        stubCaseWorkerAuthentication(HttpStatus.OK);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
 
-        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN));
+        Response mockResponse = Response.builder()
+            .request(Request.create(Request.HttpMethod.GET, "http//example.com", Collections.emptyMap(), null))
+            .status(NOT_FOUND)
+            .headers(Collections.emptyMap())
+            .build();
+        doThrow(FeignException.errorStatus("CCD exception", mockResponse))
+            .when(caseUserApi)
+            .updateCaseRolesForUser(
+                eq(BEARER_CASE_WORKER_TOKEN),
+                eq(TEST_SERVICE_TOKEN),
+                eq(CASE_ID),
+                eq(USER_ID),
+                any(CaseUser.class)
+            );
 
         webClient.perform(MockMvcRequestBuilders.delete(API_URL)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN))
-            .andExpect(status().isOk());
-    }
-
-    private void stubDeleteDraftEndpoint(StringValuePattern authHeader, StringValuePattern serviceToken) {
-        draftStoreServer.stubFor(delete(DRAFTS_CONTEXT_PATH)
-            .withHeader(HttpHeaders.AUTHORIZATION, authHeader)
-            .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())));
+            .andExpect(status().is4xxClientError());
     }
 }

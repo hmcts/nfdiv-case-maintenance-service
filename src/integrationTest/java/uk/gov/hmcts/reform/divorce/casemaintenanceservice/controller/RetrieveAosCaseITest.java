@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
@@ -382,7 +382,7 @@ public class RetrieveAosCaseITest extends MockSupport {
     private void stubToDivorceFormatEndpoint(Object request, String response) {
         caseFormatterServer.stubFor(post(TRANSFORM_TO_DIVORCE_CONTEXT_PATH)
             .withRequestBody(equalToJson(ObjectMapperTestUtil.convertObjectToJsonString(request)))
-            .withHeader(HttpHeaders.AUTHORIZATION, new EqualToPattern(RetrieveAosCaseITest.USER_TOKEN))
+            .withHeader(HttpHeaders.AUTHORIZATION, new EqualToPattern(USER_TOKEN))
             .willReturn(aResponse()
                 .withStatus(HttpStatus.OK.value())
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)

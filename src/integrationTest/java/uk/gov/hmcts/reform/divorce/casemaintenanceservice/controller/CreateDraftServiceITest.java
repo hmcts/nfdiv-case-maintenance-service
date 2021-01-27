@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.github.tomakehurst.wiremock.matching.StringValuePattern;
@@ -22,17 +22,12 @@ import org.springframework.web.client.HttpClientErrorException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.DraftStoreClient;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.CreateDraft;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.Draft;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.DraftList;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.UpdateDraft;
 
 import java.util.Collections;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
-import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.put;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -54,11 +49,9 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.T
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
-public class SaveDraftServiceITest extends MockSupport {
+public class CreateDraftServiceITest extends MockSupport {
     private static final String API_URL = "/casemaintenance/version/1/drafts";
     private static final String DRAFTS_CONTEXT_PATH = "/drafts";
-    private static final String DRAFT_ID = "1";
-    private static final Draft DRAFT = new Draft(DRAFT_ID, null, TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT);
     private static final String DATA_TO_SAVE = "{}";
 
     @Value("${draft.store.api.max.age}")
@@ -68,16 +61,16 @@ public class SaveDraftServiceITest extends MockSupport {
     private MockMvc webClient;
 
     @Test
-    public void givenJWTTokenIsNull_whenSaveDraft_thenReturnBadRequest() throws Exception {
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+    public void givenJWTTokenIsNull_whenCreateDraft_thenReturnBadRequest() throws Exception {
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON))
             .andExpect(status().isBadRequest());
     }
 
     @Test
-    public void givenDataIsNull_whenSaveDraft_thenReturnBadRequest() throws Exception {
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+    public void givenDataIsNull_whenCreateDraft_thenReturnBadRequest() throws Exception {
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .accept(MediaType.APPLICATION_JSON)
             .contentType(MediaType.APPLICATION_JSON))
@@ -85,11 +78,11 @@ public class SaveDraftServiceITest extends MockSupport {
     }
 
     @Test
-    public void givenInvalidUserToken_whenSaveDraft_thenReturnForbiddenError() throws Exception {
+    public void givenInvalidUserToken_whenCreateDraft_thenReturnForbiddenError() throws Exception {
         final String message = "some message";
         stubUserDetailsEndpoint(HttpStatus.FORBIDDEN, new EqualToPattern(USER_TOKEN), message);
 
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .content(DATA_TO_SAVE)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
@@ -99,14 +92,14 @@ public class SaveDraftServiceITest extends MockSupport {
     }
 
     @Test
-    public void givenCouldNotConnectToAuthService_whenSaveDraft_thenReturnHttp503() throws Exception {
+    public void givenCouldNotConnectToAuthService_whenCreateDraft_thenReturnHttp503() throws Exception {
         final String message = getUserDetails();
 
         when(serviceTokenGenerator.generate()).thenThrow(new HttpClientErrorException(HttpStatus.SERVICE_UNAVAILABLE));
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .content(DATA_TO_SAVE)
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
@@ -115,29 +108,7 @@ public class SaveDraftServiceITest extends MockSupport {
     }
 
     @Test
-    public void givenThereIsNoDraft_whenSaveDraft_thenSaveDraft() throws Exception {
-        final String message = getUserDetails();
-
-        final CreateDraft createDraft = new CreateDraft(Collections.emptyMap(), TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT, maxAge);
-
-        when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
-
-        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN), "");
-
-        stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-        stubSaveDraftEndpoint(new EqualToPattern(TEST_SERVICE_TOKEN), createDraft);
-
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
-            .content(DATA_TO_SAVE)
-            .param(TEST_DIVORCE_FORMAT_KEY, "false")
-            .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
-            .contentType(MediaType.APPLICATION_JSON)
-            .accept(MediaType.APPLICATION_JSON))
-            .andExpect(status().isOk());
-    }
-
-    @Test
-    public void givenThereIsNoDraftAndDivorceFormatTrue_whenSaveDraft_thenSaveDraft() throws Exception {
+    public void givenInDivorceFormat_whenCreateDraft_thenCreateDraft() throws Exception {
         final String message = getUserDetails();
 
         final CreateDraft createDraft = new CreateDraft(Collections.emptyMap(),
@@ -145,12 +116,10 @@ public class SaveDraftServiceITest extends MockSupport {
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
 
-        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN), "");
-
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-        stubSaveDraftEndpoint(new EqualToPattern(TEST_SERVICE_TOKEN), createDraft);
+        stubCreateDraftEndpoint(new EqualToPattern(TEST_SERVICE_TOKEN), createDraft);
 
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .content(DATA_TO_SAVE)
             .param(TEST_DIVORCE_FORMAT_KEY, "true")
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
@@ -160,53 +129,27 @@ public class SaveDraftServiceITest extends MockSupport {
     }
 
     @Test
-    public void givenThereIsAlreadyADraft_whenSaveDraft_thenUpdateDraft() throws Exception {
+    public void givenInCcdFormat_whenCreateDraft_thenCreateDraft() throws Exception {
         final String message = getUserDetails();
 
-        final DraftList draftList = new DraftList(Collections.singletonList(DRAFT), null);
-
-        final UpdateDraft updateDraft = new UpdateDraft(Collections.emptyMap(), TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT);
+        final CreateDraft createDraft = new CreateDraft(Collections.emptyMap(),
+            TEST_DRAFT_DOCUMENT_TYPE_CCD_FORMAT, maxAge);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
 
-        stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN),
-            ObjectMapperTestUtil.convertObjectToJsonString(draftList));
-
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
-        stubUpdateDraftEndpoint(new EqualToPattern(TEST_SERVICE_TOKEN), updateDraft);
+        stubCreateDraftEndpoint(new EqualToPattern(TEST_SERVICE_TOKEN), createDraft);
 
-        webClient.perform(MockMvcRequestBuilders.put(API_URL)
+        webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .content(DATA_TO_SAVE)
+            .param(TEST_DIVORCE_FORMAT_KEY, "false")
             .header(HttpHeaders.AUTHORIZATION, USER_TOKEN)
             .contentType(MediaType.APPLICATION_JSON)
             .accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk());
     }
 
-    private void stubGetDraftEndpoint(StringValuePattern authHeader, StringValuePattern serviceToken, String message) {
-        draftStoreServer.stubFor(get(DRAFTS_CONTEXT_PATH)
-            .withHeader(HttpHeaders.AUTHORIZATION, authHeader)
-            .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
-            .withHeader(DraftStoreClient.SECRET_HEADER_NAME, new EqualToPattern(ENCRYPTED_USER_ID))
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody(message)));
-    }
-
-    private void stubUpdateDraftEndpoint(StringValuePattern serviceToken, UpdateDraft updateDraft) {
-        draftStoreServer.stubFor(put(DRAFTS_CONTEXT_PATH + "/" + DRAFT_ID)
-            .withRequestBody(equalToJson(ObjectMapperTestUtil.convertObjectToJsonString(updateDraft)))
-            .withHeader(HttpHeaders.AUTHORIZATION, new EqualToPattern(USER_TOKEN))
-            .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
-            .withHeader(DraftStoreClient.SECRET_HEADER_NAME, new EqualToPattern(ENCRYPTED_USER_ID))
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody("{}")));
-    }
-
-    private void stubSaveDraftEndpoint(StringValuePattern serviceToken, CreateDraft createDraft) {
+    private void stubCreateDraftEndpoint(StringValuePattern serviceToken, CreateDraft createDraft) {
         draftStoreServer.stubFor(post(DRAFTS_CONTEXT_PATH)
             .withRequestBody(equalToJson(ObjectMapperTestUtil.convertObjectToJsonString(createDraft)))
             .withHeader(HttpHeaders.AUTHORIZATION, new EqualToPattern(USER_TOKEN))
@@ -215,6 +158,6 @@ public class SaveDraftServiceITest extends MockSupport {
             .willReturn(aResponse()
                 .withStatus(HttpStatus.OK.value())
                 .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody("{}")));
+                .withBody(DATA_TO_SAVE)));
     }
 }

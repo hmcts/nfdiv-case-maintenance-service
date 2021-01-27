@@ -1,4 +1,4 @@
-package uk.gov.hmcts.reform.divorce.casemaintenanceservice.functionaltest;
+package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import java.net.URL;
 import java.nio.charset.Charset;

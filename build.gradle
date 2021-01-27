@@ -98,6 +98,8 @@ tasks.withType(Checkstyle).each { checkstyleTask ->
 configurations {
     functionalTestImplementation.extendsFrom testImplementation
     functionalTestRuntime.extendsFrom testRuntime
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testRuntime
     contractTestImplementation.extendsFrom testImplementation
     contractTestRuntime.extendsFrom testRuntime
 }
@@ -298,6 +300,16 @@ sourceSets {
             srcDir('src/functionalTest/resources')
         }
     }
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir('src/integrationTest/java')
+        }
+        resources {
+            srcDir('src/integrationTest/resources')
+        }
+    }
     contractTest {
         java {
             compileClasspath += main.output
@@ -396,6 +408,11 @@ bootRun {
             systemProperty 'IDAM_CASEWORKER_PASSWORD', getVaultSecret('idam-caseworker-password')
         }
     }
+}
+
+task functional(type: Test, description: 'Runs the integration tests') {
+    setTestClassesDirs(sourceSets.integrationTest.output.classesDirs)
+    setClasspath(sourceSets.integrationTest.runtimeClasspath)
 }
 
 task nightlyFunctional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
