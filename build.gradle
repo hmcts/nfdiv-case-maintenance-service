@@ -423,7 +423,6 @@ task nightlyFunctional(type: Test, description: 'Runs the functional tests.', gr
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
             systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')
             systemProperty 'DRAFT_STORE_API_ENCRYPTION_KEY_VALUE', getVaultSecret('draft-store-api-encryption-key')
-            systemProperty 'IDAM_API_BASEURL', 'http://localhost:5000'
         }
 
 
