@@ -96,8 +96,8 @@ tasks.withType(Checkstyle).each { checkstyleTask ->
 }
 
 configurations {
-    integrationTestImplementation.extendsFrom testImplementation
-    integrationTestRuntime.extendsFrom testRuntime
+    functionalTestImplementation.extendsFrom testImplementation
+    functionalTestRuntime.extendsFrom testRuntime
     contractTestImplementation.extendsFrom testImplementation
     contractTestRuntime.extendsFrom testRuntime
 }
@@ -155,7 +155,7 @@ dependencies {
     testCompileOnly("org.projectlombok:lombok:${versions.lombok}")
     annotationProcessor("org.projectlombok:lombok:${versions.lombok}")
     testAnnotationProcessor("org.projectlombok:lombok:${versions.lombok}")
-    integrationTestImplementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+    functionalTestImplementation group: 'org.projectlombok', name: 'lombok', version: versions.lombok
 
     implementation group: 'org.springframework', name: 'spring-context-support'
     implementation (group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign')
@@ -238,24 +238,24 @@ dependencies {
     runtime('org.springframework.boot:spring-boot-devtools')
 
     //integration test
-    integrationTestImplementation group: 'com.mashape.unirest', name: 'unirest-java', version: versions.unirest
-    integrationTestImplementation group: 'junit', name: 'junit', version: versions.junit
-    integrationTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: versions.serenity
-    integrationTestImplementation group: 'net.serenity-bdd', name: 'serenity-cucumber', version: versions.serenityCucumber
-    integrationTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit', version: versions.serenity
-    integrationTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: versions.serenity
-    integrationTestImplementation group: 'net.serenity-bdd', name: 'serenity-spring', version: versions.serenity
-    integrationTestImplementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang3
-    integrationTestImplementation group: 'org.skyscreamer', name:'jsonassert', version: versions.jsonAssert
-    integrationTestImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
-    integrationTestImplementation (group: 'uk.gov.hmcts.reform', name: 'core-case-data-store-client', version: versions.ccdStoreClient)
+    functionalTestImplementation group: 'com.mashape.unirest', name: 'unirest-java', version: versions.unirest
+    functionalTestImplementation group: 'junit', name: 'junit', version: versions.junit
+    functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-core', version: versions.serenity
+    functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-cucumber', version: versions.serenityCucumber
+    functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-junit', version: versions.serenity
+    functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: versions.serenity
+    functionalTestImplementation group: 'net.serenity-bdd', name: 'serenity-spring', version: versions.serenity
+    functionalTestImplementation group: 'org.apache.commons', name: 'commons-lang3', version: versions.commonsLang3
+    functionalTestImplementation group: 'org.skyscreamer', name:'jsonassert', version: versions.jsonAssert
+    functionalTestImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test'
+    functionalTestImplementation (group: 'uk.gov.hmcts.reform', name: 'core-case-data-store-client', version: versions.ccdStoreClient)
         {
             exclude group: 'io.reactivex', module: 'io.reactivex'
             exclude group: 'io.reactivex', module: 'rxnetty'
             exclude group: 'io.reactivex', module: 'rxnetty-contexts'
             exclude group: 'io.reactivex', module: 'rxnetty-servo'
         }
-    integrationTestImplementation (group: 'uk.gov.hmcts.reform', name:'service-auth-provider-client', version: versions.serviceTokenGenerator)
+    functionalTestImplementation (group: 'uk.gov.hmcts.reform', name:'service-auth-provider-client', version: versions.serviceTokenGenerator)
         {
             exclude group: 'io.reactivex', module: 'io.reactivex'
             exclude group: 'io.reactivex', module: 'rxnetty'
@@ -263,16 +263,16 @@ dependencies {
             exclude group: 'io.reactivex', module: 'rxnetty-servo'
         }
 
-    integrationTestImplementation group: 'org.springframework', name: 'spring-context-support'
-    integrationTestImplementation (group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign')
+    functionalTestImplementation group: 'org.springframework', name: 'spring-context-support'
+    functionalTestImplementation (group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign')
         {
             exclude group: 'io.reactivex', module: 'io.reactivex'
             exclude group: 'io.reactivex', module: 'rxnetty'
             exclude group: 'io.reactivex', module: 'rxnetty-contexts'
             exclude group: 'io.reactivex', module: 'rxnetty-servo'
         }
-    integrationTestImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.2'
-    integrationTestImplementation group: 'io.github.openfeign', name: 'feign-httpclient', version: versions.feignHttpClient
+    functionalTestImplementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.10.2'
+    functionalTestImplementation group: 'io.github.openfeign', name: 'feign-httpclient', version: versions.feignHttpClient
 
     contractTestImplementation group: 'org.springframework', name: 'spring-context-support'
     contractTestImplementation (group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign')
@@ -288,14 +288,14 @@ dependencies {
 }
 
 sourceSets {
-    integrationTest {
+    functionalTest {
         java {
             compileClasspath += main.output + test.output
             runtimeClasspath += main.output + test.output
-            srcDir('src/integrationTest/java')
+            srcDir('src/functionalTest/java')
         }
         resources {
-            srcDir('src/integrationTest/resources')
+            srcDir('src/functionalTest/resources')
         }
     }
     contractTest {
@@ -340,8 +340,8 @@ dependencyManagement {
 }
 
 dependencies {
-    integrationTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-    integrationTestImplementation(sourceSets.test.output)
+    functionalTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+    functionalTestImplementation(sourceSets.test.output)
 
     contractTestCompile group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.httpComponents
     contractTestCompile group: 'org.apache.httpcomponents', name: 'fluent-hc', version: versions.httpComponents
@@ -398,7 +398,7 @@ bootRun {
     }
 }
 
-task functional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
+task nightlyFunctional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
     doFirst(){
         if (System.getenv("TEST_URL") == null) {
             println("Loading secrets from vault")
@@ -406,6 +406,7 @@ task functional(type: Test, description: 'Runs the functional tests.', group: 'V
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
             systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')
             systemProperty 'DRAFT_STORE_API_ENCRYPTION_KEY_VALUE', getVaultSecret('draft-store-api-encryption-key')
+            systemProperty 'IDAM_API_BASEURL', 'http://localhost:5000'
         }
 
 
@@ -414,8 +415,8 @@ task functional(type: Test, description: 'Runs the functional tests.', group: 'V
 
     maxParallelForks = Runtime.runtime.availableProcessors().intdiv(2) ?: 1
     forkEvery = 10
-    setTestClassesDirs(sourceSets.integrationTest.output.classesDirs)
-    setClasspath(sourceSets.integrationTest.runtimeClasspath)
+    setTestClassesDirs(sourceSets.functionalTest.output.classesDirs)
+    setClasspath(sourceSets.functionalTest.runtimeClasspath)
 
     finalizedBy aggregate
 }
