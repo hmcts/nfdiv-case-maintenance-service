@@ -37,9 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.equalToJson;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -58,13 +56,12 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.Cc
 @TestPropertySource(properties = {
     "feign.hystrix.enabled=false",
     "eureka.client.enabled=false"
-    })
+})
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 public class RetrievePetitionITest extends MockSupport {
     private static final String API_URL = "/casemaintenance/version/1/retrieveCase";
     private static final String DRAFTS_CONTEXT_PATH = "/drafts";
-    private static final String TRANSFORM_TO_CCD_CONTEXT_PATH = "/caseformatter/version/1/to-ccd-format";
 
     private static final String AWAITING_PAYMENT_STATE = CitizenCaseState.AWAITING_PAYMENT.getValue();
     private static final String SUBMITTED_PAYMENT_STATE = CitizenCaseState.SUBMITTED.getValue();
@@ -364,8 +361,6 @@ public class RetrievePetitionITest extends MockSupport {
 
         stubGetDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN),
             ObjectMapperTestUtil.convertObjectToJsonString(draftList));
-        stubToCcdFormatEndpoint(divorceSessionData,
-            ObjectMapperTestUtil.convertObjectToJsonString(caseData));
 
         when(coreCaseDataApi
             .searchForCitizen(USER_TOKEN, TEST_SERVICE_TOKEN, USER_ID, jurisdictionId, caseType, Collections.emptyMap()))
@@ -415,16 +410,6 @@ public class RetrievePetitionITest extends MockSupport {
                 .withBody(message)));
     }
 
-    private void stubToCcdFormatEndpoint(Object request, String response) {
-        caseFormatterServer.stubFor(post(TRANSFORM_TO_CCD_CONTEXT_PATH)
-            .withRequestBody(equalToJson(ObjectMapperTestUtil.convertObjectToJsonString(request)))
-            .withHeader(HttpHeaders.AUTHORIZATION, new EqualToPattern(USER_TOKEN))
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())
-                .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-                .withBody(response)));
-    }
-
     private CaseDetails createCaseDetails(Long id, String state) {
         return CaseDetails.builder()
             .id(id)
@@ -437,7 +422,7 @@ public class RetrievePetitionITest extends MockSupport {
         return createDraft(id, new HashMap<>(), documentType);
     }
 
-    private Draft createDraft(String id, Map<String, Object> document ,String documentType) {
+    private Draft createDraft(String id, Map<String, Object> document, String documentType) {
         return new Draft(id, document, documentType);
     }
 }

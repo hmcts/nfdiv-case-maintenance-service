@@ -10,7 +10,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.FormatterServiceClient;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseState;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.DivorceSessionProperties;
@@ -19,6 +18,7 @@ import uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.ccd.submission.C
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.CcdRetrievalService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.UserService;
+import uk.gov.hmcts.reform.divorce.service.CaseFormatterService;
 import uk.gov.hmcts.reform.idam.client.models.User;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
@@ -40,7 +40,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -86,7 +85,7 @@ public class PetitionServiceImplUTest {
     private static final String DRAFT_ID = "1";
 
     @Captor
-    private ArgumentCaptor<Object> ccdCaseDataArgumentCaptor;
+    private ArgumentCaptor<Map<String, Object>> ccdCaseDataArgumentCaptor;
 
     @Mock
     private CcdRetrievalService ccdRetrievalService;
@@ -95,7 +94,7 @@ public class PetitionServiceImplUTest {
     private DraftServiceImpl draftService;
 
     @Mock
-    private FormatterServiceClient formatterServiceClient;
+    private CaseFormatterService caseFormatterService;
 
     @Mock
     private UserService userService;
@@ -814,8 +813,8 @@ public class PetitionServiceImplUTest {
     }
 
     private Map<String, Object> verifyCcdCaseDataToBeTransformed() {
-        verify(formatterServiceClient).transformToDivorceFormat(ccdCaseDataArgumentCaptor.capture(), eq(TEST_AUTH_TOKEN));
-        Map<String, Object> ccdCaseDataToBeTransformed = (Map) ccdCaseDataArgumentCaptor.getValue();
+        verify(caseFormatterService).transformToDivorceSession(ccdCaseDataArgumentCaptor.capture());
+        Map<String, Object> ccdCaseDataToBeTransformed = ccdCaseDataArgumentCaptor.getValue();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             not(hasKey(D8_DOCUMENTS_UPLOADED)),
             not(hasKey(D8_REJECT_DOCUMENTS_UPLOADED)),

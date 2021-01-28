@@ -72,12 +72,6 @@ draft:
           template: "%s_%s"
           value: ${DRAFT_STORE_API_ENCRYPTION_KEY_VALUE:9VQKhID861AdxWWv1zlI}
 
-case:
-  formatter:
-    service:
-      api:
-        baseurl: ${CASE_FORMATTER_SERVICE_API_BASEURL:http://localhost:4011}
-
 auth2:
   client:
     id: divorce

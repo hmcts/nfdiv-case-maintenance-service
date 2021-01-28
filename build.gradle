@@ -118,6 +118,7 @@ def versions = [
     commonsBeanUtils: '1.9.4',
     commonsIo: '2.6',
     commonsLang3: '3.7',
+    divCommonLib: '1.4.3',
     feignHttpClient: '10.2.0',
     gradlePitest: '1.5.2',
     guava: '30.1-jre',
@@ -181,6 +182,7 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version : versions.commonsLang3
     implementation group: 'uk.gov.hmcts.reform', name: 'health-spring-boot-starter', version: versions.reformHealth
     implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: versions.reformPropertiesVolume
+    implementation group: 'uk.gov.hmcts.reform', name: 'nfdiv-common-lib', version: versions.divCommonLib
 
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.httpComponents
     implementation group: 'org.apache.httpcomponents', name: 'fluent-hc', version: versions.httpComponents
@@ -399,7 +401,6 @@ bootRun {
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_BASEURL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
             systemProperty 'CASE_DATA_STORE_BASEURL', 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
             systemProperty 'DRAFT_STORE_API_BASEURL', 'http://draft-store-service-aat.service.core-compute-aat.internal'
-            systemProperty 'CASE_FORMATTER_SERVICE_API_BASEURL', 'http://div-cfs-aat.service.core-compute-aat.internal'
 
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
             systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')

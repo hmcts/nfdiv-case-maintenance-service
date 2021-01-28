@@ -5,7 +5,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Service;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.FormatterServiceClient;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.AmendCaseRemovedProps;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseState;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseStateGrouping;
@@ -18,6 +17,7 @@ import uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.ccd.submission.C
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.CcdRetrievalService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.PetitionService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.UserService;
+import uk.gov.hmcts.reform.divorce.service.CaseFormatterService;
 import uk.gov.hmcts.reform.idam.client.models.User;
 
 import java.util.ArrayList;
@@ -51,7 +51,7 @@ public class PetitionServiceImpl implements PetitionService,
     private DraftServiceImpl draftService;
 
     @Autowired
-    private FormatterServiceClient formatterServiceClient;
+    private CaseFormatterService caseFormatterService;
 
     @Autowired
     private UserService userService;
@@ -74,7 +74,7 @@ public class PetitionServiceImpl implements PetitionService,
         }
 
         if (caseDetails == null && draft != null) {
-            caseDetails = formatDraftCase(getFormattedPetition(draft, authorisation));
+            caseDetails = formatDraftCase(getFormattedPetition(draft));
         }
 
         return caseDetails;
@@ -224,7 +224,7 @@ public class PetitionServiceImpl implements PetitionService,
 
         caseData.put(CcdCaseProperties.D8_DIVORCE_UNIT, CmsConstants.CTSC_SERVICE_CENTRE);
 
-        Map<String, Object> amendmentCaseDraft = formatterServiceClient.transformToDivorceFormat(caseData, authorisation);
+        Map<String, Object> amendmentCaseDraft = caseFormatterService.transformToDivorceSession(caseData);
 
         if (refusal) {
             amendmentCaseDraft.put(DivorceSessionProperties.PREVIOUS_REASONS_FOR_DIVORCE_REFUSAL, previousReasonsForDivorce);
@@ -280,16 +280,16 @@ public class PetitionServiceImpl implements PetitionService,
             .containsKey(DivorceSessionProperties.PREVIOUS_CASE_ID);
     }
 
-    private Map<String, Object> getFormattedPetition(Draft draft, String authorisation) {
+    private Map<String, Object> getFormattedPetition(Draft draft) {
         if (draftService.isInCcdFormat(draft)) {
-            return transformToDivorceFormat(draft.getDocument(), authorisation);
+            return transformToDivorceFormat(draft.getDocument());
         } else {
             return draft.getDocument();
         }
     }
 
-    private Map<String, Object> transformToDivorceFormat(Map<String, Object> caseData, String authorisation) {
-        return formatterServiceClient.transformToDivorceFormat(caseData, authorisation);
+    private Map<String, Object> transformToDivorceFormat(Map<String, Object> caseData) {
+        return caseFormatterService.transformToDivorceSession(caseData);
     }
 
     private CaseDetails formatDraftCase(Map<String, Object> draft) {

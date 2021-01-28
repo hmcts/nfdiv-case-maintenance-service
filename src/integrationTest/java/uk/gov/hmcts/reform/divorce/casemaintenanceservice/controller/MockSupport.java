@@ -85,14 +85,6 @@ public abstract class MockSupport {
             .extensions(new ConnectionCloseExtension())
     );
 
-    @ClassRule
-    public static WireMockClassRule caseFormatterServer = new WireMockClassRule(
-        WireMockSpring
-            .options()
-            .port(4011)
-            .extensions(new ConnectionCloseExtension())
-    );
-
     @MockBean
     AuthTokenGenerator serviceTokenGenerator;
 
