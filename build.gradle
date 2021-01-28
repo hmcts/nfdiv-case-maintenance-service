@@ -410,7 +410,7 @@ bootRun {
     }
 }
 
-task functional(type: Test, description: 'Runs the integration tests') {
+task functional(type: Test, description: 'Runs the integration tests', group: 'Verification') {
     setTestClassesDirs(sourceSets.integrationTest.output.classesDirs)
     setClasspath(sourceSets.integrationTest.runtimeClasspath)
 }
