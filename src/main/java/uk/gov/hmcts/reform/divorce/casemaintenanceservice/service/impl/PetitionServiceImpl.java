@@ -73,8 +73,7 @@ public class PetitionServiceImpl implements PetitionService,
 
     @Override
     public void onApplicationEvent(@Nonnull CaseSubmittedEvent event) {
-        // todo delete in CCD
-        // deleteDraft(event.getAuthToken());
+        // redo: delete in CCD
     }
 
     @Override
@@ -86,8 +85,7 @@ public class PetitionServiceImpl implements PetitionService,
         }
 
         final Map<String, Object> amendmentCaseDraft = this.getDraftAmendmentCase(oldCase, authorisation);
-        // todo recreate in CCD?
-        // recreateDraft(amendmentCaseDraft, authorisation);
+        // redo: recreate in CCD? should return with null ID I think
 
         return amendmentCaseDraft;
     }
@@ -101,8 +99,7 @@ public class PetitionServiceImpl implements PetitionService,
         }
 
         final Map<String, Object> amendmentCaseDraft = this.getDraftAmendmentCaseRefusal(oldCase, authorisation);
-        // todo recreate in CCD?
-        // recreateDraft(amendmentCaseDraft, authorisation);
+        // redo: recreate in CCD? Should return with null ID I think
 
         return amendmentCaseDraft;
     }
