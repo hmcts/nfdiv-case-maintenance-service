@@ -457,8 +457,8 @@ def sonarExclusions = [
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "DivorceCaseMaintenanceService"
-        property "sonar.projectName", "Divorce :: case-maintenance-service"
+        property "sonar.projectKey", "NoFaultDivorceCaseMaintenanceService"
+        property "sonar.projectName", "No Fault Divorce :: case-maintenance-service"
         property "sonar.exclusions", sonarExclusions.join(", ")
         property "sonar.coverage.jacoco.xmlReportPaths", "${jacocoTestReport.reports.xml.destination.path}"
         property "sonar.pitest.mode", "reuseReport"
