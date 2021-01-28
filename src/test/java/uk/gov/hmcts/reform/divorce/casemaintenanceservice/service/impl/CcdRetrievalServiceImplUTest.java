@@ -13,7 +13,7 @@ import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.SearchResult;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseState;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.domain.model.CitizenCaseState;
+import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CitizenCaseState;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.UserService;
 import uk.gov.hmcts.reform.idam.client.models.User;

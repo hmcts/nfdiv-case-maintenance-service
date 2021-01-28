@@ -1,7 +1,7 @@
 package uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -14,8 +14,6 @@ import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.FormatterServic
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseState;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.DivorceSessionProperties;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.Draft;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.ccd.submission.CaseSubmittedEvent;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.CcdRetrievalService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.UserService;
@@ -34,7 +32,6 @@ import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.core.Is.is;
@@ -43,12 +40,10 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTHORISATION;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTH_TOKEN;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_CASE_REF;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_DRAFT_DOC_TYPE_DIVORCE_FORMAT;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_REASON_ADULTERY;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_REASON_UNREASONABLE_BEHAVIOUR;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_RELATIONSHIP;
@@ -79,7 +74,6 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.Di
 @RunWith(MockitoJUnitRunner.class)
 public class PetitionServiceImplUTest {
 
-    private static final boolean DIVORCE_FORMAT = false;
     private static final String TEST_CASE_ID = "1234567891234567";
     private static final String USER_FIRST_NAME = "John";
     private static final String TWO_YEAR_SEPARATION = "2yr-separation";
@@ -90,9 +84,6 @@ public class PetitionServiceImplUTest {
 
     @Mock
     private CcdRetrievalService ccdRetrievalService;
-
-    @Mock
-    private DraftServiceImpl draftService;
 
     @Mock
     private FormatterServiceClient formatterServiceClient;
@@ -116,6 +107,7 @@ public class PetitionServiceImplUTest {
     }
 
     @Test
+    @Ignore("Need to add functionality to recreate a draft in CCD")
     public void givenCcdRetrievalServiceReturnsAmendCase_whenRetrievePetition_thenReturnCaseAsDraft() {
         final CaseDetails caseDetails = buildAdulteryCaseData();
 
@@ -136,53 +128,6 @@ public class PetitionServiceImplUTest {
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER);
     }
 
-    @Test
-    public void givenCcdRetrievalServiceReturnsAmendCaseWithStandardDraft_whenRetrievePetition_thenReturnCaseAsDraft() {
-        final CaseDetails caseDetails = buildAdulteryCaseData();
-
-        final Draft draft = new Draft("1", Collections.singletonMap("test", "value"), null);
-
-        when(draftService.getDraft(TEST_AUTH_TOKEN)).thenReturn(draft);
-        when(ccdRetrievalService.retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER)).thenReturn(caseDetails);
-
-        Map<String, Object> expectedCaseData = new HashMap<>();
-        expectedCaseData.put(PetitionServiceImpl.IS_DRAFT_KEY, true);
-        expectedCaseData.put(DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID);
-        expectedCaseData.put(DivorceSessionProperties.PREVIOUS_REASONS_FOR_DIVORCE,
-            singletonList(TEST_REASON_ADULTERY));
-        CaseDetails expected = CaseDetails.builder()
-            .data(expectedCaseData)
-            .build();
-
-        CaseDetails actual = classUnderTest.retrievePetition(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING);
-        assertEquals(expected, actual);
-        verifyCcdCaseDataToBeTransformed();
-        verify(draftService).getDraft(TEST_AUTH_TOKEN);
-        verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER);
-    }
-
-    @Test
-    public void givenCcdRetrievalServiceReturnsAmendCaseWithAmendDraft_whenRetrievePetition_thenReturnAmendDraft() {
-        final CaseDetails caseDetails = CaseDetails.builder().state(CaseState.AMEND_PETITION.getValue()).build();
-        Map<String, Object> amendedDraft = new HashMap<>();
-        amendedDraft.put(DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID);
-        amendedDraft.put("test", "value");
-        final Draft draft = new Draft("1", amendedDraft, null);
-
-        when(draftService.getDraft(TEST_AUTH_TOKEN)).thenReturn(draft);
-        when(ccdRetrievalService.retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER)).thenReturn(caseDetails);
-
-        CaseDetails actual = classUnderTest.retrievePetition(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING);
-
-        amendedDraft.put(PetitionServiceImpl.IS_DRAFT_KEY, true);
-        final CaseDetails expected = CaseDetails.builder()
-            .data(amendedDraft)
-            .build();
-        assertEquals(expected, actual);
-        verify(draftService).getDraft(TEST_AUTH_TOKEN);
-        verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER);
-    }
-
     @Test(expected = DuplicateCaseException.class)
     public void givenCcdRetrievalServiceThrowException_whenRetrievePetition_thenThrowException() {
         final DuplicateCaseException duplicateCaseException = new DuplicateCaseException("Duplicate");
@@ -196,15 +141,13 @@ public class PetitionServiceImplUTest {
     }
 
     @Test
-    public void givenNoDataInCcdOrDraft_whenRetrievePetition_thenReturnNull() {
+    public void givenNoDataInCcd_whenRetrievePetition_thenReturnNull() {
 
         when(ccdRetrievalService.retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER)).thenReturn(null);
-        when(draftService.getDraft(TEST_AUTH_TOKEN)).thenReturn(null);
 
         assertNull(classUnderTest.retrievePetition(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING));
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER_CASE_STATE_GROUPING, PETITIONER);
-        verify(draftService).getDraft(TEST_AUTH_TOKEN);
     }
 
     @Test
@@ -250,49 +193,6 @@ public class PetitionServiceImplUTest {
     }
 
     @Test
-    public void whenSaveDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        classUnderTest.saveDraft(TEST_AUTH_TOKEN, data, DIVORCE_FORMAT);
-
-        verify(draftService).saveDraft(TEST_AUTH_TOKEN, data, DIVORCE_FORMAT);
-    }
-
-    @Test
-    public void whenCreateDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        classUnderTest.createDraft(TEST_AUTH_TOKEN, data, DIVORCE_FORMAT);
-
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, data, DIVORCE_FORMAT);
-    }
-
-    @Test
-    public void whenGetAllDrafts_thenProceedAsExpected() {
-        classUnderTest.getAllDrafts(TEST_AUTH_TOKEN);
-
-        verify(draftService).getAllDrafts(TEST_AUTH_TOKEN);
-    }
-
-    @Test
-    public void whenDeleteDraft_thenProceedAsExpected() {
-        classUnderTest.deleteDraft(TEST_AUTH_TOKEN);
-
-        verify(draftService).deleteDraft(TEST_AUTH_TOKEN);
-    }
-
-    @Test
-    public void whenOnApplicationEvent_thenProceedAsExpected() {
-        final CaseSubmittedEvent caseSubmittedEvent = mock(CaseSubmittedEvent.class);
-
-        when(caseSubmittedEvent.getAuthToken()).thenReturn(TEST_AUTH_TOKEN);
-
-        classUnderTest.onApplicationEvent(caseSubmittedEvent);
-
-        verify(draftService).deleteDraft(TEST_AUTH_TOKEN);
-    }
-
-    @Test
     public void whenCreateAmendedPetitionDraft_thenProceedAsExpected() {
         Date originalCaseIssueDate = new Date();
 
@@ -305,10 +205,6 @@ public class PetitionServiceImplUTest {
         final CaseDetails caseDetails = CaseDetails.builder().data(caseData)
             .id(Long.decode(TEST_CASE_ID)).build();
 
-        final Map<String, Object> draftData = new HashMap<>();
-        draftData.put(DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID);
-        draftData.put(DivorceSessionProperties.PREVIOUS_REASONS_FOR_DIVORCE, singletonList(TEST_REASON_ADULTERY));
-
         final User user = new User(TEST_AUTH_TOKEN, UserDetails.builder().forename(USER_FIRST_NAME).build());
         when(ccdRetrievalService.retrieveCase(TEST_AUTH_TOKEN, PETITIONER)).thenReturn(caseDetails);
         when(userService.retrieveUser(TEST_AUTH_TOKEN)).thenReturn(user);
@@ -316,7 +212,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraft(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasEntry(CcdCaseProperties.PREVIOUS_ISSUE_DATE, originalCaseIssueDate)
@@ -344,7 +239,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraft(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(not(hasKey(CcdCaseProperties.PREVIOUS_ISSUE_DATE))));
     }
@@ -403,7 +297,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraft(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
     }
 
     @Test
@@ -416,23 +309,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraft(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-    }
-
-    @Test
-    public void givenAmendPetitionDraft_whenRetrieveCase_thenReturnDraft() {
-        Map<String, Object> documentMap = new HashMap<>();
-        documentMap.put(DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID);
-        Draft draft = buildDraft(ImmutableMap.of(DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID));
-        when(draftService.getDraft(TEST_AUTH_TOKEN))
-            .thenReturn(draft);
-
-        CaseDetails petition = classUnderTest.retrievePetition(TEST_AUTH_TOKEN, RESPONDENT_CASE_STATE_GROUPING);
-        Draft expectedDraft = buildDraft(ImmutableMap.of(
-            DivorceSessionProperties.PREVIOUS_CASE_ID, TEST_CASE_ID,
-            PetitionServiceImpl.IS_DRAFT_KEY, true
-        ));
-
-        assertThat(petition.getData(), equalTo(expectedDraft.getDocument()));
     }
 
     @Test
@@ -459,7 +335,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasEntry(CcdCaseProperties.PREVIOUS_ISSUE_DATE, originalCaseIssueDate)
@@ -489,7 +364,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasEntry(CcdCaseProperties.PREVIOUS_ISSUE_DATE, originalCaseIssueDate)
@@ -527,7 +401,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasEntry(CcdCaseProperties.PREVIOUS_ISSUE_DATE, originalCaseIssueDate)
@@ -555,7 +428,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(not(hasKey(CcdCaseProperties.PREVIOUS_ISSUE_DATE))));
     }
@@ -614,7 +486,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasKey(D_8_DIVORCE_WHO),
@@ -652,7 +523,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasKey(D_8_DIVORCE_WHO),
@@ -690,7 +560,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasKey(D_8_DIVORCE_WHO),
@@ -731,7 +600,6 @@ public class PetitionServiceImplUTest {
         classUnderTest.createAmendedPetitionDraftRefusal(TEST_AUTH_TOKEN);
 
         verify(ccdRetrievalService).retrieveCase(TEST_AUTH_TOKEN, PETITIONER);
-        verify(draftService).createDraft(TEST_AUTH_TOKEN, draftData, true);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasKey(D_8_DIVORCE_WHO),
@@ -782,7 +650,6 @@ public class PetitionServiceImplUTest {
             .createAmendedPetitionDraftRefusalFromCaseId(TEST_AUTH_TOKEN, TEST_CASE_ID);
 
         verify(ccdRetrievalService).retrieveCaseById(TEST_AUTHORISATION, TEST_CASE_ID);
-        verifyNoInteractions(draftService);
         Map<String, Object> ccdCaseDataToBeTransformed = verifyCcdCaseDataToBeTransformed();
         assertThat(ccdCaseDataToBeTransformed, allOf(
             hasKey(D_8_DIVORCE_WHO),
@@ -793,10 +660,6 @@ public class PetitionServiceImplUTest {
 
         assertThat(newCase, hasEntry(PREVIOUS_CASE_ID, TEST_CASE_ID));
         assertThat(newCase, hasEntry(PREVIOUS_REASONS_FOR_DIVORCE_REFUSAL, singletonList(TEST_REASON_ADULTERY)));
-    }
-
-    private Draft buildDraft(Map<String, Object> properties) {
-        return new Draft(DRAFT_ID, properties, TEST_DRAFT_DOC_TYPE_DIVORCE_FORMAT);
     }
 
     private CaseDetails buildAdulteryCaseData() {

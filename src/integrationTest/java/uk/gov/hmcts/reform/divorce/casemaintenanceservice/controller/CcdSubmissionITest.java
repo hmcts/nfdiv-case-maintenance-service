@@ -1,7 +1,6 @@
 package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
-import com.github.tomakehurst.wiremock.matching.StringValuePattern;
 import feign.FeignException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,22 +26,16 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.DraftStoreClient;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.impl.CcdSubmissionServiceImpl;
 
 import java.util.Map;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.delete;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTH_TOKEN;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_EVENT_ID;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_SERVICE_TOKEN;
-import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_TOKEN;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.*;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = CaseMaintenanceServiceApplication.class)
@@ -50,8 +43,7 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.T
 @PropertySource(value = "classpath:application.yml")
 @TestPropertySource(properties = {
     "feign.hystrix.enabled=false",
-    "eureka.client.enabled=false",
-    "draft.delete.async=false"
+    "eureka.client.enabled=false"
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
@@ -224,7 +216,6 @@ public class CcdSubmissionITest extends MockSupport {
 
         final CaseDetails caseDetails = CaseDetails.builder().build();
 
-        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN));
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
@@ -268,7 +259,6 @@ public class CcdSubmissionITest extends MockSupport {
 
         final CaseDetails caseDetails = CaseDetails.builder().build();
 
-        stubDeleteDraftEndpoint(new EqualToPattern(USER_TOKEN), new EqualToPattern(TEST_SERVICE_TOKEN));
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(USER_TOKEN), message);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
@@ -289,11 +279,4 @@ public class CcdSubmissionITest extends MockSupport {
             .andExpect(content().string(containsString(ObjectMapperTestUtil.convertObjectToJsonString(caseDetails))));
     }
 
-    private void stubDeleteDraftEndpoint(StringValuePattern authHeader, StringValuePattern serviceToken) {
-        draftStoreServer.stubFor(delete(DRAFTS_CONTEXT_PATH)
-            .withHeader(HttpHeaders.AUTHORIZATION, authHeader)
-            .withHeader(DraftStoreClient.SERVICE_AUTHORIZATION_HEADER_NAME, serviceToken)
-            .willReturn(aResponse()
-                .withStatus(HttpStatus.OK.value())));
-    }
 }

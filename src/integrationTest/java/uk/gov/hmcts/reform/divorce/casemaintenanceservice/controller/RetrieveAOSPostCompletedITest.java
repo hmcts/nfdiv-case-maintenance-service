@@ -24,7 +24,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import uk.gov.hmcts.reform.ccd.client.CoreCaseDataApi;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.client.DraftStoreClient;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -57,9 +56,6 @@ public class RetrieveAOSPostCompletedITest  extends MockSupport {
 
     @MockBean
     private CoreCaseDataApi coreCaseDataApi;
-
-    @MockBean
-    private DraftStoreClient draftStoreClient;
 
     @Autowired
     private MockMvc webClient;
