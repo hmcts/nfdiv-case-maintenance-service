@@ -66,15 +66,21 @@ To run all mutation tests execute the following command:
 
 To run all integration tests locally:
 
+```
+./gradlew functional
+```
+
+**Integration tests**
+
+To run all integration tests locally:
+
 Start the app:
 
 ```
 ./gradlew bootRun
+./gradlew nightlyFunctional
 ```
 
-Run the tests:
-
-`./gradlew functional`
 
 ##Developing
 **API documentation**
