@@ -2,6 +2,6 @@ version: "1"
 rules:
   - base: master
     upstream: upstream
-    mergeMethod: hardreset
+    mergeMethod: merge
     reviewers:
       - hmcts/no-fault-divorce
