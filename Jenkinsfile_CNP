@@ -65,7 +65,4 @@ withPipeline(type , product, component) {
         steps.archiveArtifacts allowEmptyArchive: true, artifacts: '**/site/serenity/**/*'
     }
 
-    onMaster() {
-        enablePactAs([AppPipelineDsl.PactRoles.CONSUMER])
-    }
 }
