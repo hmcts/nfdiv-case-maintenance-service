@@ -1,23 +1,34 @@
-variable "raw_product" {
-  default = "nfdiv"
+variable "product" {
+    default = "nfdiv"
+}
+
+variable "component" {
+    default = "case-maintenance"
+}
+
+variable "location" {
+    default = "UK South"
 }
 
 variable "env" {}
 
-variable "product" {}
+variable "subscription" {}
 
-variable "idam_api_baseurl" {}
-
-variable "capacity" {
-  default = "1"
-}
-
-variable "vault_env" {}
+variable "deployment_namespace" {}
 
 variable "common_tags" {
-    type = map(string)
+    type = "map"
 }
 
-variable "documentation_swagger_enabled" {
-  default = "false"
+variable "tenant_id" {}
+
+variable "jenkins_AAD_objectId" {
+    type = "string"
+    description = "(Required) The Azure AD object ID of a user, service principal or security group in the Azure Active Directory tenant for the vault. The object ID must be unique for the list of access policies."
+}
+
+variable "ilbIp"{}
+
+variable "managed_identity_object_id" {
+    default = ""
 }

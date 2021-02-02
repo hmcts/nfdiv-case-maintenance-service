@@ -7,6 +7,5 @@ spring:
             aliases:
                 nfdiv.cms-service-key: AUTH_PROVIDER_SERVICE_CLIENT_KEY
                 nfdiv.idam-secret: AUTH2_CLIENT_SECRET
-                nfdiv.draft-store-api-encryption-key: DRAFT_STORE_API_ENCRYPTION_KEY_VALUE
                 nfdiv.idam-caseworker-username: IDAM_CASEWORKER_USERNAME
                 nfdiv.idam-caseworker-password: IDAM_CASEWORKER_PASSWORD

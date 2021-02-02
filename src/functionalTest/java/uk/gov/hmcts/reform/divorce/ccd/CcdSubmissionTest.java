@@ -2,13 +2,7 @@ package uk.gov.hmcts.reform.divorce.ccd;
 
 import io.restassured.response.Response;
 import org.junit.Test;
-import uk.gov.hmcts.reform.divorce.model.UserDetails;
 import uk.gov.hmcts.reform.divorce.support.PetitionSupport;
-
-import java.util.Collections;
-import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 public class CcdSubmissionTest extends PetitionSupport {
 
@@ -74,27 +68,4 @@ public class CcdSubmissionTest extends PetitionSupport {
         submitAndAssertSuccess("d8-document.json");
     }
 
-    @Test
-    public void shouldReturnCaseIdForValidAddressesSessionDataAndDeleteDraft() throws Exception {
-        final UserDetails userDetails = getUserDetails();
-
-        final String userToken = userDetails.getAuthToken();
-
-        saveDraft(userToken, CCD_FORMAT_DRAFT_CONTEXT_PATH + "base-case.json", Collections.emptyMap());
-
-        Response draftsResponseBefore = getAllDraft(userToken);
-
-        assertThat(((List)draftsResponseBefore.getBody().path("data")).size()).isOne();
-
-        Response cmsResponse = submitCase("base-case.json", userDetails);
-
-        assertOkResponseAndCaseIdIsNotZero(cmsResponse);
-
-        //allow enough time for the async delete to process
-        Thread.sleep(20000);
-
-        Response draftsResponseAfter = getAllDraft(userToken);
-
-        assertThat((List) draftsResponseAfter.getBody().path("data")).isEmpty();
-    }
 }

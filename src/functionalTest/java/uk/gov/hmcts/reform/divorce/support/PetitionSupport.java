@@ -13,9 +13,6 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
     protected static final String DIVORCE_FORMAT_DRAFT_CONTEXT_PATH = "divorce-format-draft/";
     protected static final String DIVORCE_FORMAT_KEY = "divorceFormat";
 
-    @Value("${case.maintenance.draft.context-path}")
-    private String draftContextPath;
-
     @Value("${case.maintenance.petition.context-path}")
     private String petitionContextPath;
 
@@ -29,34 +26,6 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
     private String amendPetitionRefusalContextPath;
 
     private String searchContextPath = "/casemaintenance/version/1/search";
-
-    protected Response saveDraft(String userToken, String fileName, Map<String, Object> params) throws Exception {
-        return
-            RestUtil.putToRestService(
-                draftsRequestUrl(),
-                getHeaders(userToken),
-                fileName == null ? null : ResourceLoader.loadJson(fileName),
-                params
-            );
-    }
-
-    protected Response createDraft(String userToken, String fileName, Map<String, Object> params) throws Exception {
-        return
-            RestUtil.postToRestService(
-                draftsRequestUrl(),
-                getHeaders(userToken),
-                fileName == null ? null : ResourceLoader.loadJson(fileName),
-                params
-            );
-    }
-
-    protected Response deleteDraft(String userToken) {
-        return
-            RestUtil.deleteOnRestService(
-                draftsRequestUrl(),
-                getHeaders(userToken)
-            );
-    }
 
     protected Response retrieveCase(String userToken) {
         return
@@ -87,14 +56,6 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.getFromRestService(
                 getCaseRequestUrl(),
-                getHeaders(userToken)
-            );
-    }
-
-    protected Response getAllDraft(String userToken) {
-        return
-            RestUtil.getFromRestService(
-                draftsRequestUrl(),
                 getHeaders(userToken)
             );
     }
@@ -153,7 +114,4 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return serverUrl + searchContextPath;
     }
 
-    private String draftsRequestUrl() {
-        return serverUrl + draftContextPath;
-    }
 }

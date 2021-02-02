@@ -400,11 +400,9 @@ bootRun {
             systemProperty 'IDAM_API_REDIRECT_URL', 'https://div-pfe-aat.service.core-compute-aat.internal/authenticated'
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_BASEURL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
             systemProperty 'CASE_DATA_STORE_BASEURL', 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
-            systemProperty 'DRAFT_STORE_API_BASEURL', 'http://draft-store-service-aat.service.core-compute-aat.internal'
 
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
             systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')
-            systemProperty 'DRAFT_STORE_API_ENCRYPTION_KEY_VALUE', getVaultSecret('draft-store-api-encryption-key')
             systemProperty 'IDAM_CASEWORKER_USERNAME', getVaultSecret('idam-caseworker-username')
             systemProperty 'IDAM_CASEWORKER_PASSWORD', getVaultSecret('idam-caseworker-password')
         }
@@ -423,7 +421,6 @@ task nightlyFunctional(type: Test, description: 'Runs the functional tests.', gr
 
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
             systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')
-            systemProperty 'DRAFT_STORE_API_ENCRYPTION_KEY_VALUE', getVaultSecret('draft-store-api-encryption-key')
         }
 
 
@@ -452,7 +449,6 @@ task contract(type: Test) {
 pitest {
     targetClasses = ['uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller.*',
                      'uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller.support.*',
-                     'uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.factory.*',
                      'uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.ccd.submission.*',
                      'uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.config',
                      'uk.gov.hmcts.reform.divorce.casemaintenanceservice.management.monitoring.health.*',
@@ -469,8 +465,7 @@ def sonarExclusions = [
     '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/domain/**/*',
     '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/**/model/**/*',
     '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/**/config/**/*',
-    '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/CaseMaintenanceServiceApplication.java',
-    '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/client/DraftStoreClient.java'
+    '**uk/gov/hmcts/reform/divorce/casemaintenanceservice/CaseMaintenanceServiceApplication.java'
 ]
 
 sonarqube {

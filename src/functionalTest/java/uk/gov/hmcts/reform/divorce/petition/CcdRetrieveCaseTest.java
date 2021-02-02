@@ -1,6 +1,7 @@
 package uk.gov.hmcts.reform.divorce.petition;
 
 import io.restassured.response.Response;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
 import uk.gov.hmcts.reform.divorce.model.UserDetails;
@@ -110,6 +111,7 @@ public class CcdRetrieveCaseTest extends PetitionSupport {
     }
 
     @Test
+    @Ignore("Need to implement recreating case in CCD")
     public void givenAmendPetitionCaseAndNoDraft_whenRetrieveCase_thenReturnAmendDraft() throws Exception {
         final UserDetails userDetails = getUserDetails();
 
@@ -120,40 +122,6 @@ public class CcdRetrieveCaseTest extends PetitionSupport {
         assertEquals("true", cmsResponse.getBody().jsonPath().getString("case_data.fetchedDraft"));
         assertEquals(submittedCaseResponse.getBody().jsonPath().getString("id"),
             cmsResponse.getBody().jsonPath().getString("case_data.previousCaseId"));
-    }
-
-    @Test
-    public void givenAmendPetitionCaseAndOldDraft_whenRetrieveCase_thenReturnAmendDraft() throws Exception {
-        final UserDetails userDetails = getUserDetails();
-        final String draftFileName = DIVORCE_FORMAT_DRAFT_CONTEXT_PATH + EXISTING_DRAFT_JSON_FILE_PATH;
-
-        createDraft(userDetails.getAuthToken(), draftFileName,
-            Collections.singletonMap(DIVORCE_FORMAT_KEY, true));
-
-        Response submittedCaseResponse = createACaseMakePaymentAndAmendTheCase(userDetails);
-
-        Response cmsResponse = retrieveCase(userDetails.getAuthToken());
-        assertEquals("true", cmsResponse.getBody().jsonPath().getString("case_data.fetchedDraft"));
-        assertEquals(submittedCaseResponse.getBody().jsonPath().getString("id"),
-            cmsResponse.getBody().jsonPath().getString("case_data.previousCaseId"));
-        // existing draft defines divorceWho as wife, whilst AmendPetition case has husband.
-        assertEquals(TEST_RELATIONSHIP, cmsResponse.getBody().jsonPath().getString("case_data.divorceWho"));
-    }
-
-    @Test
-    public void givenAmendPetitionCaseAndAmendedDraft_whenRetrieveCase_thenReturnExisitingDraft() throws Exception {
-        final UserDetails userDetails = getUserDetails();
-        final String amendDraftFileName = DIVORCE_FORMAT_DRAFT_CONTEXT_PATH + AMEND_DRAFT_JSON_FILE_PATH;
-
-        createACaseMakePaymentAndAmendTheCase(userDetails);
-
-        createDraft(userDetails.getAuthToken(), amendDraftFileName,
-            Collections.singletonMap(DIVORCE_FORMAT_KEY, true));
-
-        Response cmsResponse = retrieveCase(userDetails.getAuthToken());
-
-        assertEquals("true", cmsResponse.getBody().jsonPath().getString("case_data.fetchedDraft"));
-        assertEquals("01234567890", cmsResponse.getBody().jsonPath().getString("case_data.previousCaseId"));
     }
 
     private Response createACaseMakePaymentAndReturnTheCase(UserDetails userDetails) throws Exception {

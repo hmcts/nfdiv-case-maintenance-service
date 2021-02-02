@@ -11,24 +11,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.DraftList;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.PetitionService;
 
 import java.util.Map;
 import java.util.Optional;
-import javax.validation.constraints.NotNull;
 
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseRetrievalStateMap.PETITIONER_CASE_STATE_GROUPING;
 
@@ -174,62 +168,6 @@ public class PetitionController {
             log.warn(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.MULTIPLE_CHOICES).build();
         }
-    }
-
-    @PutMapping(path = "/drafts", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Saves or updates a draft to draft store")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Draft saved")})
-    public ResponseEntity<Void> saveDraft(
-        @RequestHeader(HttpHeaders.AUTHORIZATION)
-        @ApiParam(value = "JWT authorisation token issued by IDAM", required = true) final String jwt,
-        @RequestBody
-        @ApiParam(value = "The case draft", required = true)
-        @NotNull final Map<String, Object> data,
-        @RequestParam(value = "divorceFormat", required = false)
-        @ApiParam(value = "Boolean flag indicting the data is in divorce format") final Boolean divorceFormat) {
-        log.debug("Received request to save a draft");
-        petitionService.saveDraft(jwt, data, Optional.ofNullable(divorceFormat).orElse(false));
-        return ResponseEntity.ok().build();
-    }
-
-    @PostMapping(path = "/drafts", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Create a new draft in draft store")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Draft saved")})
-    public ResponseEntity<Void> createDraft(
-        @RequestHeader(HttpHeaders.AUTHORIZATION)
-        @ApiParam(value = "JWT authorisation token issued by IDAM", required = true) final String jwt,
-        @RequestBody
-        @ApiParam(value = "The  case draft", required = true)
-        @NotNull final Map<String, Object> data,
-        @RequestParam(value = "divorceFormat", required = false)
-        @ApiParam(value = "Boolean flag indicting the data is in divorce format") final Boolean divorceFormat) {
-        log.debug("Received request to create a draft");
-        petitionService.createDraft(jwt, data, Optional.ofNullable(divorceFormat).orElse(false));
-        return ResponseEntity.ok().build();
-    }
-
-    @DeleteMapping(path = "/drafts")
-    @ApiOperation(value = "Deletes a divorce case draft")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "The divorce draft has been deleted successfully")})
-    public ResponseEntity<Void> deleteDraft(@RequestHeader("Authorization")
-                                            @ApiParam(value = "JWT authorisation token issued by IDAM",
-                                                required = true) final String jwt) {
-        log.debug("Received request to delete a divorce session draft");
-        petitionService.deleteDraft(jwt);
-        return ResponseEntity.ok().build();
-    }
-
-    @GetMapping(path = "/drafts", produces = MediaType.APPLICATION_JSON_VALUE)
-    @ApiOperation(value = "Retrieve All the Drafts for a given user")
-    @ApiResponses(value = {
-        @ApiResponse(code = 200, message = "Returns all the saved drafts for a given user")})
-    public ResponseEntity<DraftList> retrieveAllDrafts(@RequestHeader(HttpHeaders.AUTHORIZATION)
-                                                        @ApiParam(value = "JWT authorisation token issued by IDAM",
-                                                            required = true)final String jwt) {
-        return ResponseEntity.ok(petitionService.getAllDrafts(jwt));
     }
 
     @GetMapping(path = "/case/{caseId}", produces = MediaType.APPLICATION_JSON_VALUE)

@@ -21,8 +21,7 @@ def component = "cms"
 def secrets = [
     'nfdiv-${env}': [
         secret("cms-service-key", "AUTH_PROVIDER_SERVICE_CLIENT_KEY"),
-        secret("idam-secret", "AUTH2_CLIENT_SECRET"),
-        secret("draft-store-api-encryption-key", "DRAFT_STORE_API_ENCRYPTION_KEY_VALUE")
+        secret("idam-secret", "AUTH2_CLIENT_SECRET")
     ]
 ]
 

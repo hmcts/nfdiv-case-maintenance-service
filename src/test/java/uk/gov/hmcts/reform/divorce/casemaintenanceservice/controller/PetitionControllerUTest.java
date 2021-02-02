@@ -10,13 +10,11 @@ import org.springframework.http.ResponseEntity;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CmsConstants;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.DivorceSessionProperties;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.DraftList;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.PetitionService;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -176,89 +174,6 @@ public class PetitionControllerUTest {
         assertEquals(HttpStatus.NOT_FOUND, actual.getStatusCode());
 
         verify(petitionService).retrievePetitionByCaseId(TEST_AUTH_TOKEN, TEST_CASE_ID);
-    }
-
-    @Test
-    public void givenDivorceFormatIsNull_whenSaveDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.saveDraft(TEST_AUTH_TOKEN, data, null);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).saveDraft(TEST_AUTH_TOKEN, data, false);
-    }
-
-    @Test
-    public void givenDivorceFormatIsFalse_whenSaveDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.saveDraft(TEST_AUTH_TOKEN, data, false);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).saveDraft(TEST_AUTH_TOKEN, data, false);
-    }
-
-    @Test
-    public void givenDivorceFormatIsTrue_whenSaveDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.saveDraft(TEST_AUTH_TOKEN, data, true);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).saveDraft(TEST_AUTH_TOKEN, data, true);
-    }
-
-    @Test
-    public void givenDivorceFormatIsNull_whenCreateDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.createDraft(TEST_AUTH_TOKEN, data, null);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).createDraft(TEST_AUTH_TOKEN, data, false);
-    }
-
-    @Test
-    public void givenDivorceFormatIsFalse_whenCreateDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.createDraft(TEST_AUTH_TOKEN, data, false);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).createDraft(TEST_AUTH_TOKEN, data, false);
-    }
-
-    @Test
-    public void givenDivorceFormatIsTrue_whenCreateDraft_thenProceedAsExpected() {
-        final Map<String, Object> data = Collections.emptyMap();
-
-        ResponseEntity<Void> response = classUnderTest.createDraft(TEST_AUTH_TOKEN, data, true);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        verify(petitionService).createDraft(TEST_AUTH_TOKEN, data, true);
-    }
-
-    @Test
-    public void whenDeleteDraft_thenProceedAsExpected() {
-        ResponseEntity<Void> response = classUnderTest.deleteDraft(TEST_AUTH_TOKEN);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        verify(petitionService).deleteDraft(TEST_AUTH_TOKEN);
-    }
-
-    @Test
-    public void whenRetrieveAllDrafts_thenProceedAsExpected() {
-        final DraftList draftList = mock(DraftList.class);
-
-        when(petitionService.getAllDrafts(TEST_AUTH_TOKEN)).thenReturn(draftList);
-
-        ResponseEntity<DraftList> response = classUnderTest.retrieveAllDrafts(TEST_AUTH_TOKEN);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(draftList, response.getBody());
-
-        verify(petitionService).getAllDrafts(TEST_AUTH_TOKEN);
     }
 
     @Test

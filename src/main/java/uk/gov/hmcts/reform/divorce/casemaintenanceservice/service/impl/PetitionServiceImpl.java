@@ -11,8 +11,6 @@ import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CaseState
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CmsConstants;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.DivorceSessionProperties;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.Draft;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.draftstore.model.DraftList;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.event.ccd.submission.CaseSubmittedEvent;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.CcdRetrievalService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.PetitionService;
@@ -48,9 +46,6 @@ public class PetitionServiceImpl implements PetitionService,
     private CcdRetrievalService ccdRetrievalService;
 
     @Autowired
-    private DraftServiceImpl draftService;
-
-    @Autowired
     private CaseFormatterService caseFormatterService;
 
     @Autowired
@@ -58,26 +53,7 @@ public class PetitionServiceImpl implements PetitionService,
 
     @Override
     public CaseDetails retrievePetition(String authorisation, Map<CaseStateGrouping, List<CaseState>> caseStateGrouping) {
-
-        Draft draft = draftService.getDraft(authorisation);
-
-        CaseDetails caseDetails = ccdRetrievalService.retrieveCase(authorisation, caseStateGrouping, PETITIONER);
-
-        if (caseDetails != null && CaseState.AMEND_PETITION.getValue().equalsIgnoreCase(caseDetails.getState())) {
-            // If draft does not exist or is not an AmendPetition case, return case as draft
-            // Else assume AmendPetition draft already exists and ignore any retrieved case in AmendPetition state
-            if (draft == null || !isAmendPetitionDraft(draft)) {
-                caseDetails = formatDraftCase(getDraftAmendmentCase(caseDetails, authorisation));
-            } else {
-                caseDetails = null;
-            }
-        }
-
-        if (caseDetails == null && draft != null) {
-            caseDetails = formatDraftCase(getFormattedPetition(draft));
-        }
-
-        return caseDetails;
+        return ccdRetrievalService.retrieveCase(authorisation, caseStateGrouping, PETITIONER);
     }
 
     @Override
@@ -96,28 +72,8 @@ public class PetitionServiceImpl implements PetitionService,
     }
 
     @Override
-    public void saveDraft(String authorisation, Map<String, Object> data, boolean divorceFormat) {
-        draftService.saveDraft(authorisation, data, divorceFormat);
-    }
-
-    @Override
-    public void createDraft(String authorisation, Map<String, Object> data, boolean divorceFormat) {
-        draftService.createDraft(authorisation, data, divorceFormat);
-    }
-
-    @Override
-    public DraftList getAllDrafts(String authorisation) {
-        return draftService.getAllDrafts(authorisation);
-    }
-
-    @Override
-    public void deleteDraft(String authorisation) {
-        draftService.deleteDraft(authorisation);
-    }
-
-    @Override
     public void onApplicationEvent(@Nonnull CaseSubmittedEvent event) {
-        deleteDraft(event.getAuthToken());
+        // redo: delete in CCD
     }
 
     @Override
@@ -129,7 +85,7 @@ public class PetitionServiceImpl implements PetitionService,
         }
 
         final Map<String, Object> amendmentCaseDraft = this.getDraftAmendmentCase(oldCase, authorisation);
-        recreateDraft(amendmentCaseDraft, authorisation);
+        // redo: recreate in CCD? should return with null ID I think
 
         return amendmentCaseDraft;
     }
@@ -143,7 +99,7 @@ public class PetitionServiceImpl implements PetitionService,
         }
 
         final Map<String, Object> amendmentCaseDraft = this.getDraftAmendmentCaseRefusal(oldCase, authorisation);
-        recreateDraft(amendmentCaseDraft, authorisation);
+        // redo: recreate in CCD? Should return with null ID I think
 
         return amendmentCaseDraft;
     }
@@ -270,33 +226,4 @@ public class PetitionServiceImpl implements PetitionService,
         return previousReasons;
     }
 
-    private void recreateDraft(Map<String, Object> amendmentCaseDraft, String authorisation) {
-        this.deleteDraft(authorisation);
-        this.createDraft(authorisation, amendmentCaseDraft, true);
-    }
-
-    private boolean isAmendPetitionDraft(Draft draft) {
-        return draft.getDocument() != null && draft.getDocument()
-            .containsKey(DivorceSessionProperties.PREVIOUS_CASE_ID);
-    }
-
-    private Map<String, Object> getFormattedPetition(Draft draft) {
-        if (draftService.isInCcdFormat(draft)) {
-            return transformToDivorceFormat(draft.getDocument());
-        } else {
-            return draft.getDocument();
-        }
-    }
-
-    private Map<String, Object> transformToDivorceFormat(Map<String, Object> caseData) {
-        return caseFormatterService.transformToDivorceSession(caseData);
-    }
-
-    private CaseDetails formatDraftCase(Map<String, Object> draft) {
-        Map<String, Object> formattedDraft = new HashMap<>(draft);
-        formattedDraft.put(IS_DRAFT_KEY, true);
-        return CaseDetails.builder()
-            .data(formattedDraft)
-            .build();
-    }
 }

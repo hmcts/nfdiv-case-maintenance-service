@@ -46,8 +46,7 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.T
 @PropertySource(value = "classpath:application.yml")
 @TestPropertySource(properties = {
     "feign.hystrix.enabled=false",
-    "eureka.client.enabled=false",
-    "draft.delete.async=false"
+    "eureka.client.enabled=false"
     })
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
