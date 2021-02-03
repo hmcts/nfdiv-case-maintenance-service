@@ -111,7 +111,6 @@ def versions = [
     gradlePitest: '1.5.2',
     idamClient: '1.1.0',
     jackson: '2.11.0',
-    jsonAssert: '1.2.3',
     junit: '4.13.1',
     lombok: '1.18.12',
     pitest: '1.5.2',
@@ -126,9 +125,6 @@ def versions = [
     sonarPitest: '0.5',
     springCloudDependencies: '2.2.1.RELEASE',
     springfoxSwagger: '2.9.2',
-    springSecurityCrypto: '5.2.4.RELEASE',
-    springSecurityRsa: '1.0.8.RELEASE',
-    unirest: '1.4.9',
     wiremockVersion: '2.8.0',
     pact_version: '4.1.7',
     httpComponents: '4.5.13'
@@ -225,18 +221,6 @@ dependencies {
     contractTestCompile("org.junit.jupiter:junit-jupiter-api:5.3.2")
     contractTestRuntime("org.junit.jupiter:junit-jupiter-engine:5.3.2")
     contractTestImplementation('org.junit.jupiter:junit-jupiter-api:5.3.2')
-}
-
-dependencyManagement {
-    dependencies {
-        dependencySet(
-            group: 'com.fasterxml.jackson.core',
-            version: versions.jackson
-        ) {
-            entry 'jackson-core'
-            entry 'jackson-databind'
-        }
-    }
 }
 
 task smoke(type: Test, description: 'Runs the smoke tests.', group: 'Verification') {
