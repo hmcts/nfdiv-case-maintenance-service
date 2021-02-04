@@ -26,8 +26,8 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
         return
             RestUtil.postToRestService(
                 getRequestUrl(caseId, eventId),
-                getHeaders(userToken),
-                fileName == null ? "{}" : loadJson(fileName, PAYLOAD_CONTEXT_PATH)
+                submissionUtils.createHeadersWith(userToken),
+                fileName == null ? "{}" : submissionUtils.loadJson(fileName, PAYLOAD_CONTEXT_PATH)
             );
     }
 
@@ -35,7 +35,7 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
         return
             RestUtil.postToRestService(
                 getRequestUrl(caseId, eventId),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 data == null ? "{}" : objectToJson(data)
             );
     }
@@ -44,7 +44,7 @@ public abstract class CcdUpdateSupport extends CcdSubmissionSupport {
         return
             RestUtil.postToRestService(
                 getBulkCaseRequestUrl(caseId, eventId),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 data == null ? "{}" : objectToJson(data)
             );
     }

@@ -2,11 +2,9 @@ package uk.gov.hmcts.reform.divorce.support;
 
 import io.restassured.response.Response;
 import org.springframework.beans.factory.annotation.Value;
-import uk.gov.hmcts.reform.divorce.util.ResourceLoader;
 import uk.gov.hmcts.reform.divorce.util.RestUtil;
 
 import java.util.Collections;
-import java.util.Map;
 
 public abstract class PetitionSupport extends CcdUpdateSupport {
     protected static final String CCD_FORMAT_DRAFT_CONTEXT_PATH = "ccd-format-draft/";
@@ -31,7 +29,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.getFromRestService(
                 getRetrieveCaseRequestUrl(),
-                getHeaders(userToken)
+                submissionUtils.createHeadersWith(userToken)
             );
     }
 
@@ -39,7 +37,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.getFromRestService(
                 getCaseRequestUrl() + "/" + caseId,
-                getHeaders(userToken)
+                submissionUtils.createHeadersWith(userToken)
             );
     }
 
@@ -47,7 +45,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.postToRestService(
                 getSearchRequestUrl(),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 query
             );
     }
@@ -56,7 +54,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.getFromRestService(
                 getCaseRequestUrl(),
-                getHeaders(userToken)
+                submissionUtils.createHeadersWith(userToken)
             );
     }
 
@@ -64,7 +62,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.putToRestService(
                 getGetAmendPetitionContextPath(),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 "",
                 Collections.emptyMap()
             );
@@ -74,7 +72,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.putToRestService(
                 getGetAmendPetitionRefusalContextPath(),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 "",
                 Collections.emptyMap()
             );
@@ -84,7 +82,7 @@ public abstract class PetitionSupport extends CcdUpdateSupport {
         return
             RestUtil.putToRestService(
                 getGetAmendPetitionRefusalContextPathFromCaseId(userId),
-                getHeaders(userToken),
+                submissionUtils.createHeadersWith(userToken),
                 "",
                 Collections.emptyMap()
             );

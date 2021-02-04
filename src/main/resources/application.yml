@@ -42,6 +42,7 @@ ccd:
     create: create
     createhwf: hwfCreate
     solicitorCreate: solicitorCreate
+    create-draft: draftCreate
   bulk:
     casetype: NO_FAULT_DIVORCE_BulkAction
     eventid:

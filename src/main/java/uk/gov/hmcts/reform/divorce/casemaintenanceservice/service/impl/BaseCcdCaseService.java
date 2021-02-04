@@ -22,6 +22,9 @@ class BaseCcdCaseService {
     @Value("${ccd.casetype}")
     String caseType;
 
+    @Value("${ccd.eventid.create-draft}")
+    String createDraftEventId;
+
     @Value("${ccd.eventid.create}")
     String createEventId;
 
