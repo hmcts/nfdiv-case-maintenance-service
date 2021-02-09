@@ -106,7 +106,3 @@ feign:
         readTimeout: 10000
         loggerLevel: full
 
-
-azure:
-  application-insights:
-    instrumentation-key: ${APPINSIGHTS_INSTRUMENTATIONKEY:00000000-0000-0000-0000-000000000000}
