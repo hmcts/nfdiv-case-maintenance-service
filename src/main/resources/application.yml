@@ -88,8 +88,10 @@ management:
   endpoints:
     web:
       base-path: /
+      path-mapping:
+        health: health
       exposure:
-        include: health, info, prometheus
+        include: info, health, metrics
 
 logging:
   level:

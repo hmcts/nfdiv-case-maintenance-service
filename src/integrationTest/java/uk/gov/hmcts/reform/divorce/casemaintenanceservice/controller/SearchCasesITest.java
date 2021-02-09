@@ -3,8 +3,6 @@ package uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller;
 import com.github.tomakehurst.wiremock.matching.EqualToPattern;
 import com.google.common.collect.ImmutableMap;
 import feign.FeignException;
-import feign.Request;
-import feign.Response;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +27,6 @@ import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceService
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CitizenCaseState;
 
 import java.util.Arrays;
-import java.util.Collections;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -101,12 +98,10 @@ public class SearchCasesITest extends MockSupport {
 
         String query = "{}";
 
-        Request request = Request.create(Request.HttpMethod.GET, "http//example.com", Collections.emptyMap(), (Request.Body) null, null);
-
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
             .searchCases(USER_TOKEN, TEST_SERVICE_TOKEN, caseType, query))
-            .thenThrow(new FeignException.BadRequest("Malformed url", request, query.getBytes()));
+            .thenThrow(new FeignException.BadRequest("Malformed url", query.getBytes()));
 
         webClient.perform(MockMvcRequestBuilders.post(API_URL)
             .content(query)
