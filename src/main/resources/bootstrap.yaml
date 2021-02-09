@@ -9,5 +9,5 @@ spring:
                 nfdiv.idam-secret: AUTH2_CLIENT_SECRET
                 nfdiv.idam-caseworker-username: IDAM_CASEWORKER_USERNAME
                 nfdiv.idam-caseworker-password: IDAM_CASEWORKER_PASSWORD
-                nfdiv.AppInsightsInstrumentationKey: azure.application-insights.instrumentation-key
+                nfdiv.AppInsightsInstrumentationKey: APPINSIGHTS_INSTRUMENTATIONKEY
 
