@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties.CO_RESP_EMAIL_ADDRESS;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties.D8_PETITIONER_EMAIL;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.domain.model.CcdCaseProperties.RESP_EMAIL_ADDRESS;
@@ -37,7 +38,7 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
         User userDetails = getUser(authorisation);
         List<CaseDetails> caseDetailsList = getCaseListForUser(userDetails, role);
 
-        if (CollectionUtils.isEmpty(caseDetailsList)) {
+        if (isEmpty(caseDetailsList)) {
             return null;
         }
 
@@ -66,7 +67,7 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
 
         List<CaseDetails> incompleteCases = statusCaseDetailsMap.get(CaseStateGrouping.INCOMPLETE);
 
-        if (CollectionUtils.isEmpty(incompleteCases)) {
+        if (isEmpty(incompleteCases)) {
             List<CaseDetails> amendCases = statusCaseDetailsMap.get(CaseStateGrouping.AMEND);
 
             if (CollectionUtils.isNotEmpty(amendCases)) {
@@ -95,12 +96,30 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
 
         caseDetailsList = filterOutAmendedCases(caseDetailsList);
 
-        if (CollectionUtils.isEmpty(caseDetailsList)) {
+        if (isEmpty(caseDetailsList)) {
             return null;
         }
 
         if (caseDetailsList.size() > 1) {
             throw new DuplicateCaseException(String.format("There are [%d] case for the user [%s]",
+                caseDetailsList.size(), userDetails.getUserDetails().getId()));
+        }
+
+        return caseDetailsList.get(0);
+    }
+
+    @Override
+    public CaseDetails retrieveCase(String authorisation) throws DuplicateCaseException {
+        User userDetails = getUser(authorisation);
+
+        List<CaseDetails> caseDetailsList = getCaseListForUser(userDetails);
+
+        if (isEmpty(caseDetailsList)) {
+            return null;
+        }
+
+        if (caseDetailsList.size() > 1) {
+            throw new DuplicateCaseException(String.format("There are [%d] cases for the user [%s]",
                 caseDetailsList.size(), userDetails.getUserDetails().getId()));
         }
 
@@ -169,6 +188,18 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
             .collect(Collectors.toList());
     }
 
+    private List<CaseDetails> getCaseListForUser(User user) {
+        return Optional.ofNullable(
+            coreCaseDataApi.searchForCitizen(
+                getBearerToken(user.getAuthToken()),
+                getServiceAuthToken(),
+                user.getUserDetails().getId(),
+                jurisdictionId,
+                caseType,
+                Collections.emptyMap())
+        ).orElse(Collections.emptyList());
+    }
+
     private boolean userHasSpecifiedRole(CaseDetails caseDetails, String userEmail, DivCaseRole role) {
         if (role == null) {
             return false;
@@ -180,7 +211,8 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
             case RESPONDENT:
                 return userEmail.equalsIgnoreCase((String) caseDetails.getData().get(CO_RESP_EMAIL_ADDRESS))
                     || userEmail.equalsIgnoreCase((String) caseDetails.getData().get(RESP_EMAIL_ADDRESS));
-            default: return false;
+            default:
+                return false;
         }
     }
 
