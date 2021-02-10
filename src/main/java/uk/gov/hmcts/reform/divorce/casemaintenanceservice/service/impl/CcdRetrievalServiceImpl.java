@@ -114,8 +114,6 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
 
         List<CaseDetails> caseDetailsList = getCaseListForUser(userDetails);
 
-        caseDetailsList = filterOutAmendedCases(caseDetailsList);
-
         if (isEmpty(caseDetailsList)) {
             return null;
         }
