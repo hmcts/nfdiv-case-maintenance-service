@@ -659,6 +659,7 @@ public class CcdRetrievalServiceImplUTest {
             .searchForCitizen(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, USER_ID, TEST_JURISDICTION_ID, TEST_CASE_TYPE,
                 Collections.emptyMap());
     }
+
     private CaseDetails createCaseDetails(Long id, String state) {
         return createCaseDetails(id, state, LocalDateTime.now());
     }
