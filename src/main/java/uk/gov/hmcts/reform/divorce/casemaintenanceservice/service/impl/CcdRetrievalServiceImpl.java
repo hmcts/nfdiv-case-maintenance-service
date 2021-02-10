@@ -119,7 +119,7 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
         }
 
         if (caseDetailsList.size() > 1) {
-            throw new DuplicateCaseException(String.format("There are [%d] case for the user [%s]",
+            throw new DuplicateCaseException(String.format("There are [%d] cases for the user [%s]",
                 caseDetailsList.size(), userDetails.getUserDetails().getId()));
         }
 
