@@ -14,7 +14,9 @@ import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTHORISATION;
 import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_AUTH_TOKEN;
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.TestConstants.TEST_BEARER_AUTHORISATION;
 
 @RunWith(MockitoJUnitRunner.class)
 public class UserServiceImplUTest {
@@ -36,16 +38,16 @@ public class UserServiceImplUTest {
     @Test
     public void givenUserExists_whenRetrieveUserDetails_thenReturnUserDetails() {
         UserDetails userDetails = UserDetails.builder().build();
-        final User expected = new User(TEST_AUTH_TOKEN, userDetails);
+        final User expected = new User(TEST_AUTHORISATION, userDetails);
 
-        when(idamClient.getUserDetails(TEST_AUTH_TOKEN)).thenReturn(userDetails);
+        when(idamClient.getUserDetails(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
 
-        User actual = classUnderTest.retrieveUser(TEST_AUTH_TOKEN);
+        User actual = classUnderTest.retrieveUser(TEST_AUTHORISATION);
 
         assertEquals(expected.getUserDetails(), actual.getUserDetails());
-        assertEquals(TEST_AUTH_TOKEN, actual.getAuthToken());
+        assertEquals(TEST_BEARER_AUTHORISATION, actual.getAuthToken());
 
-        verify(idamClient).getUserDetails(TEST_AUTH_TOKEN);
+        verify(idamClient).getUserDetails(TEST_BEARER_AUTHORISATION);
     }
 
     @Test

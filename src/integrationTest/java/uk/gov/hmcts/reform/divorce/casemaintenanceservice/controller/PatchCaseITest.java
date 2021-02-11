@@ -21,7 +21,6 @@ import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.ccd.client.model.Event;
 import uk.gov.hmcts.reform.ccd.client.model.StartEventResponse;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.CaseMaintenanceServiceApplication;
-import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.impl.CaseService;
 
 import java.util.Map;
 
@@ -35,7 +34,7 @@ import static org.springframework.http.HttpStatus.OK;
 import static org.springframework.http.HttpStatus.SERVICE_UNAVAILABLE;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.test.annotation.DirtiesContext.ClassMode.AFTER_CLASS;
-import static org.springframework.test.util.ReflectionTestUtils.getField;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -53,17 +52,14 @@ import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.controller.Reso
 @PropertySource(value = "classpath:application.yml")
 @AutoConfigureMockMvc
 @DirtiesContext(classMode = AFTER_CLASS)
-public class CcdDraftCaseSubmissionITest extends MockSupport {
+public class PatchCaseITest extends MockSupport {
 
     private static final String API_URL = "/case";
-    private static final String NO_HELP_WITH_FEES_PATH = "ccd-submission-payload/addresses-no-hwf.json";
+    private static final String PATCH_CASE_JSON = "ccd-submission-payload/patch-case.json";
+    private static final String CASE_ID = "123456789";
 
-    private static final String DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_SUMMARY = (String) getField(
-        CaseService.class,
-        "DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_SUMMARY");
-    private static final String DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_DESCRIPTION = (String) getField(
-        CaseService.class,
-        "DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_DESCRIPTION");
+    private static final String DIVORCE_CASE_PATCH_EVENT_SUMMARY = "Divorce case patch event";
+    private static final String DIVORCE_CASE_PATCH_EVENT_DESCRIPTION = "Patching Divorce Case";
 
     @Value("${ccd.jurisdictionid}")
     private String jurisdictionId;
@@ -71,8 +67,8 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     @Value("${ccd.casetype}")
     private String caseType;
 
-    @Value("${ccd.eventid.create-draft}")
-    String createDraftEventId;
+    @Value("${ccd.eventid.patch}")
+    private String patchEventId;
 
     @Autowired
     private MockMvc webClient;
@@ -81,40 +77,43 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     private CoreCaseDataApi coreCaseDataApi;
 
     @Test
-    public void shouldSubmitDraftCase() throws Exception {
+    public void shouldPatchCase() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
+        final String caseData = loadJson(PATCH_CASE_JSON);
         final String userDetails = getUserDetails();
         final CaseDetails caseDetails = CaseDetails.builder().build();
         final String expectedCaseDetails = convertObjectToJsonString(caseDetails);
 
         final StartEventResponse startEventResponse = createStartEventResponse();
+
         final CaseDataContent caseDataContent = createCaseDataContent(caseData, startEventResponse);
 
         stubUserDetailsEndpoint(OK, new EqualToPattern(USER_TOKEN), userDetails);
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(
+            .startEventForCitizen(
                 USER_TOKEN,
                 TEST_SERVICE_TOKEN,
                 USER_ID,
                 jurisdictionId,
                 caseType,
-                createDraftEventId))
+                CASE_ID,
+                patchEventId))
             .thenReturn(startEventResponse);
         when(coreCaseDataApi
-            .submitForCitizen(
+            .submitEventForCitizen(
                 USER_TOKEN,
                 TEST_SERVICE_TOKEN,
                 USER_ID,
                 jurisdictionId,
                 caseType,
+                CASE_ID,
                 true,
                 caseDataContent))
             .thenReturn(caseDetails);
 
-        webClient.perform(post(API_URL)
+        webClient.perform(patch(API_URL)
             .content(caseData)
             .header(AUTHORIZATION, USER_TOKEN)
             .contentType(APPLICATION_JSON)
@@ -124,9 +123,25 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     }
 
     @Test
-    public void shouldReturnErrorMessageIfSubmitForCitizenCallReturnsError() throws Exception {
+    public void shouldReturnBadRequestIfCaseIdMissingFromPayload() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
+        final String caseData = "{"
+            + "\"D8PetitionerFirstName\":\"John\""
+            + "}";
+
+        webClient.perform(patch(API_URL)
+            .content(caseData)
+            .header(AUTHORIZATION, USER_TOKEN)
+            .contentType(APPLICATION_JSON)
+            .accept(APPLICATION_JSON))
+            .andExpect(status().isBadRequest())
+            .andExpect(content().string("Missing 'id' in payload."));
+    }
+
+    @Test
+    public void shouldReturnBadRequestIfSubmitForCitizenCallReturnsError() throws Exception {
+
+        final String caseData = loadJson(PATCH_CASE_JSON);
         final String userDetails = getUserDetails();
         final int feignStatusCode = BAD_REQUEST.value();
         final FeignException feignException = getMockedFeignException(feignStatusCode);
@@ -138,26 +153,28 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(
+            .startEventForCitizen(
                 USER_TOKEN,
                 TEST_SERVICE_TOKEN,
                 USER_ID,
                 jurisdictionId,
                 caseType,
-                createDraftEventId))
+                CASE_ID,
+                patchEventId))
             .thenReturn(startEventResponse);
         when(coreCaseDataApi
-            .submitForCitizen(
+            .submitEventForCitizen(
                 USER_TOKEN,
                 TEST_SERVICE_TOKEN,
                 USER_ID,
                 jurisdictionId,
                 caseType,
+                CASE_ID,
                 true,
                 caseDataContent))
             .thenThrow(feignException);
 
-        webClient.perform(post(API_URL)
+        webClient.perform(patch(API_URL)
             .content(caseData)
             .header(AUTHORIZATION, USER_TOKEN)
             .contentType(APPLICATION_JSON)
@@ -167,9 +184,8 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     }
 
     @Test
-    public void shouldReturnErrorMessageIfStartForCitizenCallReturnsError() throws Exception {
+    public void shouldReturnBadRequestIfStartForCitizenCallReturnsError() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
         final String userDetails = getUserDetails();
         final int feignStatusCode = BAD_REQUEST.value();
         final FeignException feignException = getMockedFeignException(feignStatusCode);
@@ -178,17 +194,18 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
 
         when(serviceTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi
-            .startForCitizen(
+            .startEventForCitizen(
                 USER_TOKEN,
                 TEST_SERVICE_TOKEN,
                 USER_ID,
                 jurisdictionId,
                 caseType,
-                createDraftEventId))
+                CASE_ID,
+                patchEventId))
             .thenThrow(feignException);
 
-        webClient.perform(post(API_URL)
-            .content(caseData)
+        webClient.perform(patch(API_URL)
+            .content(loadJson(PATCH_CASE_JSON))
             .header(AUTHORIZATION, USER_TOKEN)
             .contentType(APPLICATION_JSON)
             .accept(APPLICATION_JSON))
@@ -199,14 +216,11 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     @Test
     public void shouldReturnServiceUnavailableIfUnableToConnectToAuthorizationService() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
-        final String message = getUserDetails();
-
-        stubUserDetailsEndpoint(OK, new EqualToPattern(USER_TOKEN), message);
+        stubUserDetailsEndpoint(OK, new EqualToPattern(USER_TOKEN), getUserDetails());
         when(serviceTokenGenerator.generate()).thenThrow(new HttpClientErrorException(SERVICE_UNAVAILABLE));
 
         webClient.perform(post(API_URL)
-            .content(caseData)
+            .content(loadJson(PATCH_CASE_JSON))
             .header(AUTHORIZATION, USER_TOKEN)
             .contentType(APPLICATION_JSON)
             .accept(APPLICATION_JSON))
@@ -216,13 +230,12 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     @Test
     public void shouldReturnForbiddenErrorIfUserTokenIsInvalid() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
         final String forbiddenMessage = "forbidden message";
 
         stubUserDetailsEndpoint(FORBIDDEN, new EqualToPattern(USER_TOKEN), forbiddenMessage);
 
         webClient.perform(post(API_URL)
-            .content(caseData)
+            .content(loadJson(PATCH_CASE_JSON))
             .header(AUTHORIZATION, USER_TOKEN)
             .contentType(APPLICATION_JSON)
             .accept(APPLICATION_JSON))
@@ -233,10 +246,8 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
     @Test
     public void shouldReturnBadRequestIfJwtUserTokenIsNull() throws Exception {
 
-        final String caseData = loadJson(NO_HELP_WITH_FEES_PATH);
-
         webClient.perform(post(API_URL)
-            .content(caseData)
+            .content(loadJson(PATCH_CASE_JSON))
             .contentType(APPLICATION_JSON)
             .accept(APPLICATION_JSON))
             .andExpect(status().isBadRequest());
@@ -260,17 +271,21 @@ public class CcdDraftCaseSubmissionITest extends MockSupport {
             .build();
     }
 
+    @SuppressWarnings("unchecked")
     private CaseDataContent createCaseDataContent(final String caseData, final StartEventResponse startEventResponse) {
+
+        final Map<String, Object> caseDataMap = convertStringToObject(caseData, Map.class);
+        caseDataMap.remove("id");
 
         return CaseDataContent.builder()
             .eventToken(startEventResponse.getToken())
             .event(
                 Event.builder()
                     .id(startEventResponse.getEventId())
-                    .summary(DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_SUMMARY)
-                    .description(DIVORCE_DRAFT_CASE_SUBMISSION_EVENT_DESCRIPTION)
+                    .summary(DIVORCE_CASE_PATCH_EVENT_SUMMARY)
+                    .description(DIVORCE_CASE_PATCH_EVENT_DESCRIPTION)
                     .build()
-            ).data(convertStringToObject(caseData, Map.class))
+            ).data(caseDataMap)
             .build();
     }
 }

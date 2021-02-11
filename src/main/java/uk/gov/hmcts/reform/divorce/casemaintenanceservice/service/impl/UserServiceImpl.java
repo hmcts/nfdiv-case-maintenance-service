@@ -8,6 +8,8 @@ import uk.gov.hmcts.reform.idam.client.IdamClient;
 import uk.gov.hmcts.reform.idam.client.models.User;
 import uk.gov.hmcts.reform.idam.client.models.UserDetails;
 
+import static uk.gov.hmcts.reform.divorce.casemaintenanceservice.util.AuthUtil.getBearerToken;
+
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -22,9 +24,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User retrieveUser(String authorisation) {
-        UserDetails userDetails = idamClient.getUserDetails(authorisation);
+        final String bearerToken = getBearerToken(authorisation);
+        final UserDetails userDetails = idamClient.getUserDetails(bearerToken);
 
-        return new User(authorisation, userDetails);
+        return new User(bearerToken, userDetails);
     }
 
     @Override

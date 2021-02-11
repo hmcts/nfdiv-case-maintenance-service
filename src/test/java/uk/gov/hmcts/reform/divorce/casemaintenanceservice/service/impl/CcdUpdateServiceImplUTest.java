@@ -90,7 +90,7 @@ public class CcdUpdateServiceImplUTest {
         final User userDetails = new User("auth", UserDetails.builder().id(userId).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startEventForCitizen(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, userId, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, caseId, CASE_EVENT_ID)).thenReturn(startEventResponse);
@@ -135,7 +135,7 @@ public class CcdUpdateServiceImplUTest {
         );
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startEventForCaseWorker(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, userId, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, caseId, CASE_EVENT_ID)).thenReturn(startEventResponse);
@@ -179,7 +179,7 @@ public class CcdUpdateServiceImplUTest {
         final User userDetails = new User("auth",UserDetails.builder().id(userId).roles(userRoles).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startEventForCitizen(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, userId, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, caseId, CASE_EVENT_ID)).thenReturn(startEventResponse);
@@ -221,7 +221,7 @@ public class CcdUpdateServiceImplUTest {
         final User userDetails = new User("auth",UserDetails.builder().id(userId).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startEventForCaseWorker(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, userId, TEST_JURISDICTION_ID,
             BULK_CASE_TYPE, caseId, CASE_EVENT_ID)).thenReturn(startEventResponse);

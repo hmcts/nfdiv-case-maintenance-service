@@ -12,16 +12,20 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.hmcts.reform.ccd.client.model.CaseDetails;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.DuplicateCaseException;
+import uk.gov.hmcts.reform.divorce.casemaintenanceservice.exception.InvalidRequestException;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.CcdRetrievalService;
 import uk.gov.hmcts.reform.divorce.casemaintenanceservice.service.impl.CaseService;
+import uk.gov.hmcts.reform.divorce.casemaintenanceservice.util.CaseDataUtil;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -30,6 +34,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 @Api(value = "Case Maintenance Services", consumes = "application/json", produces = "application/json")
 @Slf4j
 public class CaseController {
+
+    @Autowired
+    private CaseDataUtil caseDataUtil;
 
     @Autowired
     private CaseService caseService;
@@ -71,5 +78,30 @@ public class CaseController {
             log.warn(e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.MULTIPLE_CHOICES).build();
         }
+    }
+
+    @PatchMapping(path = "/case", consumes = APPLICATION_JSON_VALUE, produces = APPLICATION_JSON_VALUE)
+    @ApiOperation(value = "Patch a divorce case in CCD")
+    @ApiResponses(value = {
+        @ApiResponse(
+            code = 200,
+            message = "A request to patch the case details is sent to CCD. The body payload "
+                + "will return the latest version of the case after the patch.",
+            response = CaseDetails.class
+        ),
+        @ApiResponse(code = 400, message = "Returned when id is missing from json payload"),
+    })
+    public ResponseEntity<CaseDetails> patchCase(
+        @RequestBody @ApiParam(value = "Case Data", required = true) final Map<String, Object> caseData,
+        @RequestHeader(AUTHORIZATION)
+        @ApiParam(value = "JWT authorisation token issued by IDAM", required = true) final String jwt) {
+
+        return Optional.ofNullable(caseData.get("id"))
+            .map(caseId -> ResponseEntity.ok(
+                caseService.patchCase(
+                    caseId.toString(),
+                    caseDataUtil.copyAndRemoveKeys(caseData, "id"),
+                    jwt)))
+            .orElseThrow(() -> new InvalidRequestException("Missing 'id' in payload."));
     }
 }

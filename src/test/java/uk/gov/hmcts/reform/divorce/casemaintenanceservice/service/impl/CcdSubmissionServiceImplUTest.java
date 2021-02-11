@@ -101,7 +101,7 @@ public class CcdSubmissionServiceImplUTest {
         final User userDetails = new User(TEST_AUTH_TOKEN, UserDetails.builder().id(USER_ID).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startForCitizen(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, USER_ID, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, CREATE_EVENT_ID)).thenReturn(startEventResponse);
@@ -143,7 +143,7 @@ public class CcdSubmissionServiceImplUTest {
         final User userDetails = new User(TEST_AUTH_TOKEN, UserDetails.builder().id(USER_ID).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startForCitizen(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, USER_ID, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, CREATE_HWF_EVENT_ID)).thenReturn(startEventResponse);
@@ -184,7 +184,7 @@ public class CcdSubmissionServiceImplUTest {
         final User userDetails = new User(TEST_AUTH_TOKEN, UserDetails.builder().id(USER_ID).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startForCaseworker(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, USER_ID, TEST_JURISDICTION_ID,
             BULK_CASE_TYPE, CREATE_BULK_CASE_EVENT_ID)).thenReturn(startEventResponse);
@@ -220,7 +220,7 @@ public class CcdSubmissionServiceImplUTest {
         final User userDetails = new User(TEST_AUTH_TOKEN, UserDetails.builder().id(USER_ID).build());
         final CaseDetails expected = CaseDetails.builder().build();
 
-        when(userService.retrieveUser(TEST_BEARER_AUTHORISATION)).thenReturn(userDetails);
+        when(userService.retrieveUser(TEST_AUTHORISATION)).thenReturn(userDetails);
         when(authTokenGenerator.generate()).thenReturn(TEST_SERVICE_TOKEN);
         when(coreCaseDataApi.startForCaseworker(TEST_BEARER_AUTHORISATION, TEST_SERVICE_TOKEN, USER_ID, TEST_JURISDICTION_ID,
             TEST_CASE_TYPE, SOLICITOR_CREATE_EVENT_ID)).thenReturn(startEventResponse);

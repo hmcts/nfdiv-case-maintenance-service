@@ -7,12 +7,16 @@ import java.util.Collections;
 import java.util.Map;
 
 public class RestUtil {
-    public static Response postToRestService(String url, Map<String, Object> headers, String requestBody) {
+    public static Response postToRestService(final String url,
+                                             final Map<String, Object> headers,
+                                             final String requestBody) {
         return postToRestService(url, headers, requestBody, Collections.emptyMap());
     }
 
-    public static Response postToRestService(String url, Map<String, Object> headers, String requestBody,
-                                             Map<String, Object> params) {
+    public static Response postToRestService(final String url,
+                                             final Map<String, Object> headers,
+                                             final String requestBody,
+                                             final Map<String, Object> params) {
         if (requestBody != null) {
             return SerenityRest.given()
                 .headers(headers)
@@ -31,8 +35,10 @@ public class RestUtil {
         }
     }
 
-    public static Response putToRestService(String url, Map<String, Object> headers, String requestBody,
-                                     Map<String, Object> params) {
+    public static Response putToRestService(final String url,
+                                            final Map<String, Object> headers,
+                                            final String requestBody,
+                                            final Map<String, Object> params) {
         if (requestBody != null) {
             return SerenityRest.given()
                 .headers(headers)
@@ -50,7 +56,20 @@ public class RestUtil {
         }
     }
 
-    public static Response deleteOnRestService(String url, Map<String, Object> headers) {
+    public static Response patchToRestService(final String url,
+                                              final Map<String, Object> headers,
+                                              final String requestBody,
+                                              final Map<String, Object> params) {
+        return SerenityRest.given()
+            .headers(headers)
+            .params(params)
+            .body(requestBody)
+            .when()
+            .patch(url)
+            .andReturn();
+    }
+
+    public static Response deleteOnRestService(final String url, final Map<String, Object> headers) {
         return SerenityRest.given()
             .headers(headers)
             .when()
@@ -58,7 +77,7 @@ public class RestUtil {
             .andReturn();
     }
 
-    public static Response getFromRestService(String url, Map<String, Object> headers) {
+    public static Response getFromRestService(final String url, final Map<String, Object> headers) {
         return SerenityRest.given()
             .headers(headers)
             .when()

@@ -22,9 +22,6 @@ class BaseCcdCaseService {
     @Value("${ccd.casetype}")
     String caseType;
 
-    @Value("${ccd.eventid.create-draft}")
-    String createDraftEventId;
-
     @Value("${ccd.eventid.create}")
     String createEventId;
 
@@ -50,7 +47,7 @@ class BaseCcdCaseService {
     private AuthTokenGenerator authTokenGenerator;
 
     User getUser(String userToken) {
-        return userService.retrieveUser(getBearerToken(userToken));
+        return userService.retrieveUser(userToken);
     }
 
     User getAnonymousCaseWorkerDetails() {

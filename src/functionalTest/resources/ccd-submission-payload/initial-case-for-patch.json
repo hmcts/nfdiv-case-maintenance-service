@@ -1,0 +1,11 @@
+{
+  "createdDate": "2018-06-07",
+  "D8ScreenHasMarriageBroken": "YES",
+  "D8ScreenHasRespondentAddress": "YES",
+  "D8ScreenHasMarriageCert": "YES",
+  "D8ScreenHasPrinter": "YES",
+  "D8FinancialOrderFor":[
+    "petitioner",
+    "children"
+  ]
+}
