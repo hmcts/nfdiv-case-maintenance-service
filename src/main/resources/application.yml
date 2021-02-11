@@ -3,6 +3,8 @@ info:
     name: ${spring.application.name}
 
 spring:
+  config:
+    import: "optional:configtree:/mnt/secrets/"
   application:
     name: nfdiv-cms
   resources:
@@ -20,16 +22,16 @@ idam:
   client:
     redirect_uri: ${IDAM_API_REDIRECT_URL:http://localhost:8080/authenticated}
     id: divorce
-    secret: ${AUTH2_CLIENT_SECRET:dummysecret}
+    secret: ${nfdiv.idam-secret:dummysecret}
   api:
     url: ${IDAM_API_BASEURL:http://localhost:4503}
     redirect-url: ${IDAM_API_REDIRECT_URL:http://localhost:8080/authenticated}
   caseworker:
-    username: ${IDAM_CASEWORKER_USERNAME:dummycaseworker@test.com}
-    password: ${IDAM_CASEWORKER_PASSWORD:dummy}
+    username: ${nfdiv.idam-caseworker-username:dummycaseworker@test.com}
+    password: ${nfdiv.idam-caseworker-password:dummy}
   s2s-auth:
     microservice: ${AUTH_PROVIDER_SERVICE_CLIENT_MICROSERVICE:nfdiv_cms}
-    totp_secret: ${AUTH_PROVIDER_SERVICE_CLIENT_KEY:dummysecret}
+    totp_secret: ${nfdiv.cms-service-key:dummysecret}
     url: ${AUTH_PROVIDER_SERVICE_CLIENT_BASEURL:http://localhost:4502}
     port: ${AUTH_PROVIDER_SERVICE_CLIENT_PORT:4502}
     health:
@@ -89,10 +91,8 @@ management:
   endpoints:
     web:
       base-path: /
-      path-mapping:
-        health: health
       exposure:
-        include: info, health, metrics
+        include: health, info, prometheus
 
 logging:
   level:
@@ -109,3 +109,7 @@ feign:
         readTimeout: 10000
         loggerLevel: full
 
+
+azure:
+  application-insights:
+    instrumentation-key: ${nfdiv.AppInsightsInstrumentationKey:00000000-0000-0000-0000-000000000000}
