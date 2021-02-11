@@ -115,6 +115,7 @@ public abstract class MockSupport {
                 .withRequestBody(new EqualToPattern(tokenBody()))
                 .willReturn(aResponse()
                     .withStatus(HttpStatus.OK.value())
+                    .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
                     .withBody("{ \"access_token\" : \"" + CASE_WORKER_TOKEN + "\" }")));
 
         stubUserDetailsEndpoint(HttpStatus.OK, new EqualToPattern(BEARER_CASE_WORKER_TOKEN),
