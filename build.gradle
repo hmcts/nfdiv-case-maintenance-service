@@ -114,7 +114,6 @@ def versions = [
     junit: '4.13.1',
     lombok: '1.18.12',
     pitest: '1.5.2',
-    reformPropertiesVolume: '0.1.0',
     reformsJavaLogging: '5.1.7',
     restAssured: '3.3.0',
     serenity: '2.2.12',
@@ -149,7 +148,6 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-collections4', version : versions.commonsCollections
     implementation group: 'io.springfox', name: 'springfox-swagger2', version: versions.springfoxSwagger
     implementation group: 'io.springfox', name: 'springfox-swagger-ui', version: versions.springfoxSwagger
-    implementation group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: versions.reformPropertiesVolume
     implementation group: 'uk.gov.hmcts.reform', name: 'nfdiv-common-lib', version: versions.divCommonLib
 
     implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: versions.httpComponents
@@ -234,10 +232,10 @@ bootRun {
             systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_BASEURL', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'
             systemProperty 'CASE_DATA_STORE_BASEURL', 'http://ccd-data-store-api-aat.service.core-compute-aat.internal'
 
-            systemProperty 'AUTH_PROVIDER_SERVICE_CLIENT_KEY', getVaultSecret('cms-service-key')
-            systemProperty 'AUTH2_CLIENT_SECRET', getVaultSecret('idam-secret')
-            systemProperty 'IDAM_CASEWORKER_USERNAME', getVaultSecret('idam-caseworker-username')
-            systemProperty 'IDAM_CASEWORKER_PASSWORD', getVaultSecret('idam-caseworker-password')
+            systemProperty 'nfdiv.cms-service-key', getVaultSecret('cms-service-key')
+            systemProperty 'nfdiv.idam-secret', getVaultSecret('idam-secret')
+            systemProperty 'nfdiv.idam-caseworker-username', getVaultSecret('idam-caseworker-username')
+            systemProperty 'nfdiv.idam-caseworker-password', getVaultSecret('idam-caseworker-password')
         }
     }
 }
