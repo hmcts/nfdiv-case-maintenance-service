@@ -16,8 +16,6 @@ public interface CcdRetrievalService {
 
     CaseDetails retrieveCase(String authorisation, DivCaseRole role) throws DuplicateCaseException;
 
-    CaseDetails retrieveCase(String authorisation) throws DuplicateCaseException;
-
     CaseDetails retrieveCaseById(String authorisation, String caseId);
 
     SearchResult searchCase(String authorisation, String query);
