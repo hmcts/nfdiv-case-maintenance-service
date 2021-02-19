@@ -109,24 +109,6 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
     }
 
     @Override
-    public CaseDetails retrieveCase(String authorisation) throws DuplicateCaseException {
-        User userDetails = getUser(authorisation);
-
-        List<CaseDetails> caseDetailsList = getCaseListForUser(userDetails);
-
-        if (isEmpty(caseDetailsList)) {
-            return null;
-        }
-
-        if (caseDetailsList.size() > 1) {
-            throw new DuplicateCaseException(String.format("There are [%d] cases for the user [%s]",
-                caseDetailsList.size(), userDetails.getUserDetails().getId()));
-        }
-
-        return caseDetailsList.get(0);
-    }
-
-    @Override
     public CaseDetails retrieveCaseById(String authorisation, String caseId) {
         User userDetails = getUser(authorisation);
         List<String> userRoles = Optional.ofNullable(userDetails.getUserDetails().getRoles())
@@ -186,18 +168,6 @@ public class CcdRetrievalServiceImpl extends BaseCcdCaseService implements CcdRe
         return cases.stream()
             .filter(caseDetails -> userHasSpecifiedRole(caseDetails, user.getUserDetails().getEmail(), role))
             .collect(Collectors.toList());
-    }
-
-    private List<CaseDetails> getCaseListForUser(User user) {
-        return Optional.ofNullable(
-            coreCaseDataApi.searchForCitizen(
-                getBearerToken(user.getAuthToken()),
-                getServiceAuthToken(),
-                user.getUserDetails().getId(),
-                jurisdictionId,
-                caseType,
-                Collections.emptyMap())
-        ).orElse(Collections.emptyList());
     }
 
     private boolean userHasSpecifiedRole(CaseDetails caseDetails, String userEmail, DivCaseRole role) {
